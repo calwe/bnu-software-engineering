@@ -1,0 +1,11 @@
+services:
+  users:
+    image: users-service:dev
+    command: "fastapi dev app/main.py --host 0.0.0.0"
+    ports:
+      - "8001:8000"
+    build:
+      context: ./services/users
+    volumes:
+      - ./services/users/app:/code/app
+
