@@ -5,6 +5,8 @@ const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL || 'http://localhost:800
 
 export const usersApi = createApiClient(USERS_SERVICE_URL)
 
+// client helper functions
+
 function createApiClient(baseURL: string): AxiosInstance {
     const client = axios.create({
         baseURL,
