@@ -31,7 +31,6 @@ class Session(BaseModel):
     iat: int
     exp: int
 
-session_data = {}
 
 @app.post("/login/")
 def login(login: Login) -> LoginResponse:
@@ -48,12 +47,12 @@ def login(login: Login) -> LoginResponse:
     logger.info(f"Created session: {session}")
     
     encoded_jwt = jwt.encode(session, JWT_SECRET, algorithm="HS256")
-    session_data[session_id] = session
 
     return { 
         "token": encoded_jwt,
         "expires_in": JWT_EXPIRY
     }
+
 
 @app.get("/getSession")
 def get_session(user = Depends(verify_user)):
