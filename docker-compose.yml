@@ -6,6 +6,8 @@ services:
       - "8001:8000"
     build:
       context: ./services/users
+    env_file:
+      - ./services/.env
     volumes:
       - ./services/users/app:/code/app
 

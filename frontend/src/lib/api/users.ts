@@ -6,7 +6,8 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  message: string
+  token: string
+  expires_in: number
 }
 
 export const usersService = {

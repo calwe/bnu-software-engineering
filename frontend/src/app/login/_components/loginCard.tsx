@@ -10,11 +10,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { usersService } from "@/lib/api/users"
+import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
 export default function LoginCard() {
   async function login(formData: FormData) {
     'use server'
+
+    const cookieStore = await cookies()
 
     const loginRequest = {
       username: formData.get('username') as string,
@@ -23,6 +26,10 @@ export default function LoginCard() {
 
     try {
       const response = await usersService.login(loginRequest)
+      cookieStore.set('jwt', response.token, {
+        maxAge: response.expires_in,
+        path: '/'
+      })
     } catch (error) {
       console.error("Error: ", error)
       throw error
