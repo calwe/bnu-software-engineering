@@ -1,4 +1,5 @@
-import axios, { AxiosInstance, AxiosRequestConfig } from 'axios'
+import axios, { AxiosInstance } from 'axios'
+import { cookies } from 'next/headers'
 
 const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL || 'http://localhost:8001'
 
@@ -13,5 +14,27 @@ function createApiClient(baseURL: string): AxiosInstance {
         },
     })
 
+    client.interceptors.request.use(
+        async (config) => {
+            const token = await getAuthToken()
+            console.log(token)
+            
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`
+            }
+
+            return config
+        },
+    )
+
+    client.interceptors.response.use(
+        (response) => response,
+    )
+
     return client
+}
+
+async function getAuthToken() {
+  const cookieClient = await cookies()
+  return cookieClient.get("jwt")?.value
 }

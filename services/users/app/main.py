@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from pydantic import BaseModel
 import logging
 import uuid
@@ -7,6 +7,7 @@ from typing import Dict
 import time
 import jwt
 import os
+from app.auth import verify_user
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,3 +55,6 @@ def login(login: Login) -> LoginResponse:
         "expires_in": JWT_EXPIRY
     }
 
+@app.get("/getSession")
+def get_session(user = Depends(verify_user)):
+    return user
