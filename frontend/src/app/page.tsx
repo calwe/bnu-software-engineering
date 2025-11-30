@@ -8,5 +8,9 @@ export default async function Home() {
     redirect('/login')
   }
 
-  return <h1>Welcome {session.sub}</h1>
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <h1 className="text-xl">Welcome {session.sub}</h1>
+    </div>
+  )
 }
