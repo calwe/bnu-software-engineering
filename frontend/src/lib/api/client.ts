@@ -17,7 +17,6 @@ function createApiClient(baseURL: string): AxiosInstance {
     client.interceptors.request.use(
         async (config) => {
             const token = await getAuthToken()
-            console.log(token)
             
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`
@@ -25,10 +24,6 @@ function createApiClient(baseURL: string): AxiosInstance {
 
             return config
         },
-    )
-
-    client.interceptors.response.use(
-        (response) => response,
     )
 
     return client
