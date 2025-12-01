@@ -41,6 +41,7 @@ to use this parameter, but adding it ensures that endpoints have the correct aut
 During development, its easiest to just run the frontend directly:
 
 ```
+$ npm ci # install dependencies from lock file
 $ npm run dev
 ```
 
