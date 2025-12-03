@@ -8,6 +8,8 @@ export interface Device {
   locked?: boolean;
 }
 
+// Make different types for light heater door etc. ??
+
 export const listDevices = async (): Promise<Device[]> => {
   const res = await appliancesApi.get<Device[]>("/appliances")
   return res.data

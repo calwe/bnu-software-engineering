@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { listDevices, sendCommand, type Device } from "@/lib/api/appliances";
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default async function Home() {
   const session = await usersService.getSession()
@@ -19,26 +20,36 @@ export default async function Home() {
         <CardHeader>
           <CardTitle>Appliances</CardTitle>
           <CardDescription>Connected Appliances</CardDescription>
-          {/* <CardAction>
-            <Button variant="secondary" size="sm">
-              Toggle
-            </Button> 
-          </CardAction> */}
         </CardHeader>
         <CardContent>
-          {devices.map((device : Device) => (
-            <div className="p-2 grid gap-6">
-              <Card key={device.id}>
+          {Object.entries(devices).map(([id, device]: [string, Device]) => (
+            <div key={id} className="p-2 grid gap-6">
+              <Card key={id}>
                 <CardHeader>
-                  <CardTitle>{device.id}</CardTitle>
+                  <CardTitle>{id}</CardTitle>
+                  <CardDescription>{device.type}</CardDescription>
+                  <CardAction>
+                    {device.type === 'light' && (
+                      // <Button onClick={() => sendCommand(id, { status: device.status === "on" ? "off" : "on"})}>
+                      <Button>
+                        Toggle Light
+                      </Button>
+                    )}
+                    {device.type === 'heater' && (
+                      <Input>
+                      </Input>
+                    )}
+                    {device.type === 'door' && (
+                      <Button>
+                        {device.locked ? "Unlock Door" : "Lock Door"}
+                      </Button>
+                    )}
+                  </CardAction>
                 </CardHeader>
               </Card>
             </div>
           ))}
         </CardContent>
-        {/* <CardFooter>
-          <p>Last updated: 2 minutes ago</p>
-        </CardFooter> */}
       </Card>
     </div>
   )
