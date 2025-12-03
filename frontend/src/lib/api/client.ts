@@ -2,8 +2,10 @@ import axios, { AxiosInstance } from 'axios'
 import { cookies } from 'next/headers'
 
 const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL || 'http://localhost:8001'
+const APPLIANCES_SERVICE_URL = process.env.APPLIANCES_SERVICE_URL || 'http://localhost:8002'
 
 export const usersApi = createApiClient(USERS_SERVICE_URL)
+export const appliancesApi = createApiClient(APPLIANCES_SERVICE_URL)
 
 // client helper functions
 
