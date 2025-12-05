@@ -4,6 +4,8 @@ import { listDevices, sendCommand, type Device } from "@/lib/api/appliances";
 import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+// import { DeviceControl } from "./_components/deviceControl";
+import DeviceControl from "./_components/deviceControl";
 
 export default async function Home() {
   const session = await usersService.getSession()
@@ -29,22 +31,13 @@ export default async function Home() {
                   <CardTitle>{id}</CardTitle>
                   <CardDescription>{device.type}</CardDescription>
                   <CardAction>
-                    {device.type === 'light' && (
-                      // <Button onClick={() => sendCommand(id, { status: device.status === "on" ? "off" : "on"})}>
-                      <Button>
-                        Toggle Light
-                      </Button>
-                    )}
-                    {device.type === 'heater' && (
-                      <Input>
-                      </Input>
-                    )}
-                    {device.type === 'door' && (
-                      <Button>
-                        {device.locked ? "Unlock Door" : "Lock Door"}
-                      </Button>
-                    )}
+                    <DeviceControl id={id} type={device.type} status={device.status} temperature={device.temperature} locked={device.locked} />
                   </CardAction>
+                  <CardContent>
+                    {device.type === 'light' && (
+                      <div>Status: {device.status}</div>
+                    )}
+                  </CardContent>
                 </CardHeader>
               </Card>
             </div>
