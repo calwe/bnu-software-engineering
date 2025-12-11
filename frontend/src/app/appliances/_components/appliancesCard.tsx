@@ -20,7 +20,7 @@ export default async function AppliancesCard() {
                 <CardTitle>{id}</CardTitle>
                 <CardDescription>{device.type}</CardDescription>
                 <CardAction>
-                  <DeviceControl device={{ id, ...device }} />
+                  <DeviceControl id={id} device={device} />
                 </CardAction>
               </CardHeader>
             </Card>

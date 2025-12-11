@@ -7,11 +7,12 @@ import { toggleLight } from "../../_actions/deviceActions"
 import { Device } from "@/lib/api/appliances"
 
 interface DeviceControlProps {
+  id: string
   device: Device 
 }
 
-export default function DeviceControl({ device }: DeviceControlProps) {
-  const { id, type } = device
+export default function DeviceControl({ id, device }: DeviceControlProps) {
+  const { type } = device
   const [showStatus, setShowStatus] = useState(device.status ?? "")
 
   async function handleClick() {
