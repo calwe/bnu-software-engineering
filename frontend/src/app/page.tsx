@@ -1,5 +1,6 @@
 import { usersService } from "@/lib/api/users";
 import { redirect } from "next/navigation";
+import AppliancesCard from "./appliances/_components/appliancesCard";
 
 export default async function Home() {
   const session = await usersService.getSession()
@@ -9,8 +10,8 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <h1 className="text-xl">Welcome {session.sub}</h1>
+    <div className="p-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <AppliancesCard/>
     </div>
   )
 }

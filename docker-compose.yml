@@ -10,4 +10,17 @@ services:
       - ./services/.env
     volumes:
       - ./services/users/app:/code/app
+  appliances:
+    image: appliances-service:dev
+    command: "fastapi dev app/main.py --host 0.0.0.0"
+    ports:
+      - "8002:8000"
+    build:
+      context: ./services/appliances
+    env_file:
+      - ./services/.env
+    volumes:
+      - ./services/appliances/app:/code/app
+    depends_on:
+      - users
 
