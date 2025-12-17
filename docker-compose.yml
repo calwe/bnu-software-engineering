@@ -23,4 +23,17 @@ services:
       - ./services/appliances/app:/code/app
     depends_on:
       - users
+  security:
+    image: security-service:dev
+    command: "fastapi dev app/main.py --host 0.0.0.0"
+    ports:
+      - "8003:8000"
+    build:
+      context: ./services/security
+    env_file:
+      - ./services/.env
+    volumes:
+      - ./services/security/app:/code/app
+    depends_on:
+      - users
 

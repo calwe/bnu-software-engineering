@@ -27,4 +27,12 @@ services:
       context: ./services/appliances
     env_file:
       - ./services/.env.production
+  security:
+    image: security-service:prod
+    ports:
+      - "8003:80"
+    build:
+      context: ./services/security
+    env_file:
+      - ./services/.env.production
 
