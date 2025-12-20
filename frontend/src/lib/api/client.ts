@@ -3,9 +3,11 @@ import { cookies } from 'next/headers'
 
 const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL || 'http://localhost:8001'
 const APPLIANCES_SERVICE_URL = process.env.APPLIANCES_SERVICE_URL || 'http://localhost:8002'
+const FIRE_SAFETY_SERVICE_URL = process.env.FIRE_SAFETY_SERVICE_URL || 'http://localhost:8003'
 
 export const usersApi = createApiClient(USERS_SERVICE_URL)
 export const appliancesApi = createApiClient(APPLIANCES_SERVICE_URL)
+export const fireSafetyApi = createApiClient(FIRE_SAFETY_SERVICE_URL)
 
 // client helper functions
 

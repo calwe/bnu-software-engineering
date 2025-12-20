@@ -8,7 +8,7 @@ import { Device } from "@/lib/api/appliances"
 
 interface DeviceControlProps {
   id: string
-  device: Device 
+  device: Device
 }
 
 export default function DeviceControl({ id, device }: DeviceControlProps) {
@@ -35,7 +35,22 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
     )
   }
 
-
-  return null
-}
- 
+  if (type === 'fire_alarm') {
+    return (
+      <div className="flex flex-col gap-2 items-center">
+        <Label>Status: {showStatus}</Label>
+        <Button onClick={handleClick}>
+          {showStatus === 'on' ? 'Deactivate' : 'Activate'}
+        </Button>
+      </div>
+    )
+  } else if (type === 'sprinkler') {
+    return (
+      <div className="flex flex-col gap-2 items-center">
+        <Label>Status: {showStatus}</Label>
+        <Button onClick={handleClick}>
+          {showStatus === 'on' ? 'Turn Off' : 'Turn On'}
+        </Button>
+      </div>
+    )
+  }}
