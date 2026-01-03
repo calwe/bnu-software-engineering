@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useState } from "react"
-import { updateSensors } from "../../_actions/fireSafetyActions"
+import { updateSensorReadings } from "@/lib/api/fire_safety"
 
 export default function SensorControl() {
   const [temperature, setTemperature] = useState("20")
@@ -15,7 +15,10 @@ export default function SensorControl() {
   async function handleUpdate() {
     setLoading(true)
     try {
-      const result = await updateSensors(parseFloat(temperature), parseFloat(smokeLevel))
+      const result = await updateSensorReadings({
+        temperature: parseFloat(temperature),
+        smoke_level: parseFloat(smokeLevel)
+      })
       setResponse(result)
     } catch (error) {
       console.error('Error:', error)
@@ -64,9 +67,9 @@ export default function SensorControl() {
         {loading ? 'Updating...' : 'Update Sensor Readings'}
       </Button>
 
-        {response.alarm_triggered && <p>Fire Alarm Activated</p>}
-        {response.sprinkler_triggered && <p>Sprinklers Activated</p>}
-        {!response.alarm_triggered && !response.sprinkler_triggered && (
+        {response && response.alarm_triggered && <p>Fire Alarm Activated</p>}
+        {response && response.sprinkler_triggered && <p>Sprinklers Activated</p>}
+        {response && !response.alarm_triggered && !response.sprinkler_triggered && (
           <p>All sensor readings normal</p>
         )}
         

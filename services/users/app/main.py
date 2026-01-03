@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import logging
 import uuid
@@ -13,6 +14,15 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],  # Frontend origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 JWT_EXPIRY = int(os.getenv("JWT_EXPIRY", 24 * 60 * 60))
 JWT_SECRET = os.getenv("JWT_SECRET", "secret") 
@@ -32,7 +42,7 @@ class Session(BaseModel):
     exp: int
 
 
-@app.post("/login/")
+@app.post("/login")
 def login(login: Login) -> LoginResponse:
     session_id = str(uuid.uuid4())
     created_at = int(time.time())

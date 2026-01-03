@@ -1,7 +1,9 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import SensorControl from "./sensorControl";
+"use client"
 
-export default async function FireSafetyCard() {
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import SensorControl from "./SensorControl"
+
+export default function FireSafetyCard() {
   return (
     <Card>
       <CardHeader>
@@ -22,5 +24,5 @@ export default async function FireSafetyCard() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
