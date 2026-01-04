@@ -31,15 +31,13 @@ class FireSafetyTrigger(BaseModel):
     activate: bool
 
 devices: Dict[str, dict] = {
-    # Lights with room associations
+    
     "Living Room Main Light": {"id": "light1", "type": "light", "room": "living_room", "status": "off"},
     "Living Room Lamp": {"id": "light2", "type": "light", "room": "living_room", "status": "off"},
     "Bedroom Ceiling Light": {"id": "light3", "type": "light", "room": "bedroom", "status": "off"},
     "Bedroom Bedside Lamp": {"id": "light4", "type": "light", "room": "bedroom", "status": "off"},
     "Kitchen Main Light": {"id": "light5", "type": "light", "room": "kitchen", "status": "off"},
     "Kitchen Counter Light": {"id": "light6", "type": "light", "room": "kitchen", "status": "off"},
-    
-    # Other appliances
     "Living Room Heater": {"id": "heater1", "type": "heater", "room": "living_room", "temperature": 20},
     "Front Door": {"id": "door1", "type": "door", "locked": True},
     "Living Room Fire Alarm": {"id": "fire_alarm1", "type": "fire_alarm", "room": "living_room", "fire_alarm_active": False, "status": "off"},

@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import RoomControl from "./AutomaticPowerControl.tsx"
+import AutomaticPowerControl from "./AutomaticPowerControl"
 import PowerMonitoring from "./PowerMonitoring"
 
 export default function EnergyCard() {
@@ -19,7 +19,7 @@ export default function EnergyCard() {
               <CardDescription>When rooms are empty, automatically turn off the lights to save energy</CardDescription>
             </CardHeader>
             <CardContent>
-              <RoomControl />
+              <AutomaticPowerControl />
               
             </CardContent>
           </Card>
