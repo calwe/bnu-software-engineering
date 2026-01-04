@@ -1,16 +1,12 @@
 services:
-  frontend-runner:
-    build:
-      context: ./frontend
-      target: runner
-    env_file:
-      - ./frontend/.env.production
-  frontend-nginx:
+  frontend:
     ports:
       - "8080:80"
     build:
       context: ./frontend
-      target: proxy
+      target: production
+    env_file:
+      - ./frontend/.env.production
   users:
     image: users-service:prod
     ports:
@@ -27,4 +23,3 @@ services:
       context: ./services/appliances
     env_file:
       - ./services/.env.production
-

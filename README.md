@@ -36,13 +36,28 @@ to use this parameter, but adding it ensures that endpoints have the correct aut
 
 ### Frontend
 
+The frontend is built with **Vite + React** and uses React Router for navigation.
+
 #### Running
 
 During development, its easiest to just run the frontend directly:
 
 ```
+$ cd frontend
 $ npm ci # install dependencies from lock file
 $ npm run dev
+```
+
+The app will be available at `http://localhost:3000`.
+
+#### Environment Variables
+
+Copy `.env.example` to `.env` and configure the service URLs:
+
+```
+VITE_USERS_SERVICE_URL=http://localhost:8001
+VITE_APPLIANCES_SERVICE_URL=http://localhost:8002
+VITE_FIRE_SAFETY_SERVICE_URL=http://localhost:8003
 ```
 
 #### Contributing
@@ -53,7 +68,7 @@ used. If you get an import error trying to use a component - it just needs to be
 Details can be found on each components page.
 
 Adding a new service to our API requires adding a client in `lib/api/client.ts`, and defining the API in its own service file
-(see `lib/api/users.ts`) for an example. Defining the API like this, rather than just using fetch(URL)... ensures type safety,
+(see `lib/api/users.ts`) for an example. Defining the API like this, rather than just using `axios(URL)...` ensures type safety,
 and allows us to automatically add the auth token to requests when the user is logged in.
 
 ## Production
@@ -65,5 +80,5 @@ in each directory already), and running:
 $ docker compose -f docker-compose-prod.yaml up --build
 ```
 
-This will start the entire project, with it accessible at `http://localhost:8080`. As this is a production build, there is no
-live editing supported here - changes will require rebuilding the project.
+This will start the entire project, with it accessible at `http://localhost:8080`. The frontend is built as a static site
+and served via nginx. As this is a production build, there is no live editing supported here - changes will require rebuilding the project.

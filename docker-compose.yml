@@ -23,4 +23,19 @@ services:
       - ./services/appliances/app:/code/app
     depends_on:
       - users
+  fire_safety:
+    image: fire-safety-service:dev
+    command: "fastapi dev app/main.py --host 0.0.0.0"
+    ports:
+      - "8003:8000"
+    build:
+      context: ./services/fire_safety
+    env_file:
+      - ./services/.env
+    environment:
+      - APPLIANCES_SERVICE_URL=http://appliances:8000
+    volumes:
+      - ./services/fire_safety/app:/code/app
+    depends_on:
+      - appliances
 

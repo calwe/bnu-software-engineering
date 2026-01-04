@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.appliances import router as appliances_router
+from app.fire_safety import router as fire_safety_router
 import os
 
 app = FastAPI()
@@ -15,4 +15,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(appliances_router, prefix="/appliances")
+app.include_router(fire_safety_router, prefix="/fire_safety")
