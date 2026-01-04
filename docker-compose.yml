@@ -38,4 +38,19 @@ services:
       - ./services/fire_safety/app:/code/app
     depends_on:
       - appliances
+  energy:
+    image: energy-service:dev
+    command: "fastapi dev app/main.py --host 0.0.0.0"
+    ports:
+      - "8004:8000"
+    build:
+      context: ./services/energy
+    env_file:
+      - ./services/.env
+    environment:
+      - APPLIANCES_SERVICE_URL=http://appliances:8000
+    volumes:
+      - ./services/energy/app:/code/app
+    depends_on:
+      - appliances
 
