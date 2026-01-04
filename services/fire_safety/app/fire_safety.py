@@ -50,8 +50,9 @@ async def get_fire_safety_devices(token: str):
                 "sprinklers": []
             }
             
-            for device_id, device in devices.items():
+            for device_key, device in devices.items():
                 device_type = device.get("type")
+                device_id = device.get("id", device_key)  # Use id field, fallback to key
                 if device_type == "fire_alarm":
                     fire_devices["alarms"].append(device_id)
                 elif device_type == "sprinkler":
