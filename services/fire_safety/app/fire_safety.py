@@ -112,12 +112,10 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
                 if fire_devices["alarms"]:
                     print(f"Activating {len(fire_devices['alarms'])} fire alarms")
                     await toggle_devices(fire_devices["alarms"], "on", token)
-                    # alarm_triggered = True
                 
                 if fire_devices["sprinklers"]:
                     print(f"Activating {len(fire_devices['sprinklers'])} sprinklers")
                     await toggle_devices(fire_devices["sprinklers"], "on", token)
-                    # sprinkler_triggered = True
                     
                 if not fire_devices["alarms"] and not fire_devices["sprinklers"]:
                     print("No fire devices found")
