@@ -42,14 +42,14 @@ export default function AppliancesCard() {
         <CardDescription>Connected Appliances</CardDescription>
       </CardHeader>
       <CardContent>
-        {Object.entries(devices).map(([deviceName, device]) => (
-          <div key={device.id} className="p-2 grid gap-6">
+        {Object.entries(devices).map(([id, device]) => (
+          <div key={device.name} className="p-2 grid gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>{deviceName}</CardTitle>
+                <CardTitle>{device.name}</CardTitle>
                 <CardDescription>{device.type}</CardDescription>
                 <CardAction>
-                  <DeviceControl id={device.id!} device={device} />
+                  <DeviceControl id={id} device={device} />
                 </CardAction>
               </CardHeader>
             </Card>

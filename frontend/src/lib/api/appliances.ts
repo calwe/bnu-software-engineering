@@ -1,7 +1,7 @@
 import { appliancesApi } from "./client";
 
 export interface Device {
-  id?: string;
+  name: string;
   type: string;
   room?: string;
   status?: string;

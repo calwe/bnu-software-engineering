@@ -72,7 +72,7 @@ export default function AutomaticPowerControl() {
 
       {response && (
         <div className="p-4 rounded-lg">
-          {response.lights_turned_off && response.light_names.length > 0 && (
+          {response.lights_turned_off && response.light_names && response.light_names.length > 0 && (
             <div>
               <p className="font-medium">
                 Lights automatically turned off in {response.room_name}:
@@ -84,7 +84,7 @@ export default function AutomaticPowerControl() {
               </ul>
             </div>
           )}
-          {response.lights_turned_on && response.light_names.length > 0 && (
+          {response.lights_turned_on && response.light_names && response.light_names.length > 0 && (
             <div>
               <p className="font-medium">
                 Lights automatically turned on in {response.room_name}:

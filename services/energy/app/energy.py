@@ -59,15 +59,16 @@ async def get_light_devices(token: str):
             devices = response.json()
             lights = {}
             
-            for device_key, device in devices.items():
+            # device_id is now the dictionary key
+            for device_id, device in devices.items():
                 device_type = device.get("type")
                 if device_type == "light":
                     room = device.get("room", "unknown")
                     if room not in lights:
                         lights[room] = []
                     lights[room].append({
-                        "id": device.get("id"),
-                        "name": device_key
+                        "id": device_id,
+                        "name": device.get("name", device_id)
                     })
             
             return lights
@@ -115,20 +116,22 @@ async def get_power_consumption(token: str):
                 "heater": HEATER_POWER_RATING
             }
             
-            for device_key, device in devices.items():
+            # device_id is now the dictionary key
+            for device_id, device in devices.items():
                 device_type = device.get("type", "unknown")
                 if device_type == "sprinkler":
                     continue
                 status = device.get("status", "off")
+                device_name = device.get("name", device_id)
     
                 power_rating = power_ratings.get(device_type, 0.0)
                 
                 if status == "on":
                     total_consumption += power_rating
                     active_count += 1
-                    breakdown[device_key] = power_rating
+                    breakdown[device_name] = power_rating
                 else:
-                    breakdown[device_key] = 0.0
+                    breakdown[device_name] = 0.0
             
             return {
                 "total": total_consumption,
