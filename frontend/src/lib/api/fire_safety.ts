@@ -9,8 +9,7 @@ export interface SensorResponse {
   message: string;
   temperature: number;
   smoke_level: number;
-  alarm_triggered: boolean;
-  sprinkler_triggered: boolean;
+  fire_active: boolean;
 }
 
 export const getSensorReadings = async (): Promise<SensorReadings> => {

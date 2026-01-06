@@ -15,8 +15,7 @@ class SensorResponse(BaseModel):
     message: str
     temperature: float
     smoke_level: float
-    alarm_triggered: bool
-    sprinkler_triggered: bool
+    fire_active: bool
 
 TEMPERATURE_THRESHOLD = 75.0 
 SMOKE_THRESHOLD = 0.3  
@@ -92,9 +91,6 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
     current_readings["temperature"] = readings.temperature
     current_readings["smoke_level"] = readings.smoke_level
     
-    alarm_triggered = False
-    sprinkler_triggered = False
-    
     # Check current threshold state
     threshold_state = readings.temperature > TEMPERATURE_THRESHOLD or readings.smoke_level > SMOKE_THRESHOLD
 
@@ -116,12 +112,10 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
                 if fire_devices["alarms"]:
                     print(f"Activating {len(fire_devices['alarms'])} fire alarms")
                     await toggle_devices(fire_devices["alarms"], "on", token)
-                    alarm_triggered = True
                 
                 if fire_devices["sprinklers"]:
                     print(f"Activating {len(fire_devices['sprinklers'])} sprinklers")
                     await toggle_devices(fire_devices["sprinklers"], "on", token)
-                    sprinkler_triggered = True
                     
                 if not fire_devices["alarms"] and not fire_devices["sprinklers"]:
                     print("No fire devices found")
@@ -143,17 +137,11 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
         
         # Update previous state
         previous_threshold_state = threshold_state
-    else:
-        # Set device triggered flags based on current state
-        if threshold_state:
-            alarm_triggered = True
-            sprinkler_triggered = True
     
     return SensorResponse(
         message="Readings updated",
         temperature=readings.temperature,
         smoke_level=readings.smoke_level,
-        alarm_triggered=alarm_triggered,
-        sprinkler_triggered=sprinkler_triggered
+        fire_active=threshold_state
     )
 
