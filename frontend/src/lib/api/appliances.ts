@@ -1,7 +1,9 @@
 import { appliancesApi } from "./client";
 
 export interface Device {
+  name: string;
   type: string;
+  room?: string;
   status?: string;
   temperature?: number;
   locked?: boolean;

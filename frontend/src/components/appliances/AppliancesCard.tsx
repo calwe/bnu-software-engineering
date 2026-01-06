@@ -45,10 +45,10 @@ export default function AppliancesCard() {
 
       <CardContent>
         {Object.entries(devices).map(([id, device]) => (
-          <div key={id} className="p-2 grid gap-6">
-            <Card key={id}>
+          <div key={device.name} className="p-2 grid gap-6">
+            <Card>
               <CardHeader>
-                <CardTitle>{id}</CardTitle>
+                <CardTitle>{device.name}</CardTitle>
                 <CardDescription>{device.type}</CardDescription>
                 <CardAction>
                   <DeviceControl id={id} device={device} />

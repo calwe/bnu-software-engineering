@@ -49,6 +49,7 @@ async def get_fire_safety_devices(token: str):
                 "sprinklers": []
             }
             
+            # device_key is now the device ID
             for device_id, device in devices.items():
                 device_type = device.get("type")
                 if device_type == "fire_alarm":
