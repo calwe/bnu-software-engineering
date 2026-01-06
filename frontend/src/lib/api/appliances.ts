@@ -5,8 +5,6 @@ export interface Device {
   status?: string;
   temperature?: number;
   locked?: boolean;
-  alarm_active?: boolean;
-  sprinkler_active?: boolean;
 }
 
 export const listDevices = async (): Promise<Record<string, Device>> => {
@@ -17,4 +15,4 @@ export const listDevices = async (): Promise<Record<string, Device>> => {
 export const sendCommand = async (deviceId: string, command: Record<string, any>) => {
   const result = await appliancesApi.post(`/appliances/${deviceId}/command`, command)
   return result.data
-}
+};
