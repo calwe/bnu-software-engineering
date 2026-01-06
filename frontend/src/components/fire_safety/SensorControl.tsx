@@ -1,19 +1,22 @@
-"use client"
-
-import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { updateSensorReadings } from "@/lib/api/fire_safety"
 
 export default function SensorControl() {
   const [temperature, setTemperature] = useState("20")
   const [smokeLevel, setSmokeLevel] = useState("0")
   const [response, setResponse] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      handleUpdate()
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [temperature, smokeLevel])
 
   async function handleUpdate() {
-    setLoading(true)
     try {
       const result = await updateSensorReadings({
         temperature: parseFloat(temperature),
@@ -23,7 +26,6 @@ export default function SensorControl() {
     } catch (error) {
       console.error('Error:', error)
     } finally {
-      setLoading(false)
     }
   }
 
@@ -41,8 +43,7 @@ export default function SensorControl() {
             onChange={(e) => setTemperature(e.target.value)}
             placeholder="Enter temperature"
           />
-          <span className="text-xs text-muted-foreground">Threshold: 60°C
-          </span>
+          <span className="text-xs text-muted-foreground">Threshold: 75°C </span>
         </div>
 
         <div className="flex flex-col gap-2">
@@ -62,15 +63,10 @@ export default function SensorControl() {
           <span className="text-xs text-muted-foreground">Threshold: 0.3</span>
         </div>
       </div>
-
-      <Button onClick={handleUpdate} disabled={loading}>
-        {loading ? 'Updating...' : 'Update Sensor Readings'}
-      </Button>
-
-        {response && response.alarm_triggered && <p>Fire Alarm Activated</p>}
-        {response && response.sprinkler_triggered && <p>Sprinklers Activated</p>}
-        {response && !response.alarm_triggered && !response.sprinkler_triggered && (
-          <p>All sensor readings normal</p>
+        {response && (
+          <p className={response.fire_active ? "text-red-600" : "text-green-600"}>
+            {response.fire_active ? "🔥 Fire Alarm Activated" : "✅ All sensor readings normal"}
+          </p>
         )}
         
     </div>

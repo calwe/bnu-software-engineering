@@ -1,7 +1,3 @@
-"use client"
-
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { Device } from "@/lib/api/appliances"
 import { sendCommand } from "@/lib/api/appliances"
@@ -12,46 +8,48 @@ interface DeviceControlProps {
 }
 
 export default function DeviceControl({ id, device }: DeviceControlProps) {
+  
   const { type } = device
-  const [showStatus, setShowStatus] = useState(device.status ?? "")
+  const status = device.status ?? ""
+
+  const [lightStatus, setLightStatus] = useState(device.status ?? "")
 
   async function handleClick() {
     try {
-      const newStatus = showStatus === 'on' ? 'off' : 'on'
+      const newStatus = lightStatus === 'on' ? 'off' : 'on'
       await sendCommand(id, { status: newStatus })
-      setShowStatus(newStatus)
+      setLightStatus(newStatus)
     } catch (error) {
       console.log('Error:', error)
     }
   }
+
+    const StatusLight = () => (
+    <span
+      className={`inline-block w-8 h-8 rounded-full ${status === "on" ? "bg-red-600 animate-pulse" : "bg-gray-300"}`}
+      title={status === "on" ? "Active" : "Inactive"}
+    />
+  )
   
   if (type === 'light') {
     return (
       <div className="flex flex-col gap-2 items-center">
-        <Label>Status: {showStatus}</Label>
-        <Button onClick={handleClick}>
-          {showStatus === 'on' ? 'Turn Off' : 'Turn On'}
-        </Button>
+        <div 
+          onClick={handleClick} 
+          className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
+            ${status === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+          `}
+        >
+          <div className="w-6 h-6 bg-white rounded-full shadow-md" />
+        </div>
       </div>
     )
   }
 
-  if (type === 'fire_alarm') {
+  if (type === "fire_alarm" || type === "sprinkler") {
     return (
       <div className="flex flex-col gap-2 items-center">
-        <Label>Status: {showStatus}</Label>
-        <Button onClick={handleClick}>
-          {showStatus === 'on' ? 'Deactivate' : 'Activate'}
-        </Button>
-      </div>
-    )
-  } else if (type === 'sprinkler') {
-    return (
-      <div className="flex flex-col gap-2 items-center">
-        <Label>Status: {showStatus}</Label>
-        <Button onClick={handleClick}>
-          {showStatus === 'on' ? 'Turn Off' : 'Turn On'}
-        </Button>
+        <StatusLight />
       </div>
     )
   }

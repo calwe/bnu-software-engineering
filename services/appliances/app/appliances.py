@@ -12,15 +12,11 @@ class Device(BaseModel):
     status: Optional[str] = None
     temperature: Optional[int] = None
     locked: Optional[bool] = None
-    alarm_active: Optional[bool] = None
-    sprinkler_active: Optional[bool] = None
 
 class DeviceCommand(BaseModel):
     status: Optional[str] = None
     temperature: Optional[int] = None
     locked: Optional[bool] = None
-    alarm_active: Optional[bool] = None
-    sprinkler_active: Optional[bool] = None
 
 class CommandResponse(BaseModel):
     message: str
@@ -39,13 +35,19 @@ devices: Dict[str, dict] = {
     "light6": {"name": "Kitchen Counter Light", "type": "light", "room": "kitchen", "status": "off"},
     "heater1": {"name": "Living Room Heater", "type": "heater", "room": "living_room", "temperature": 20},
     "door1": {"name": "Front Door", "type": "door", "locked": True},
-    "fire_alarm1": {"name": "Living Room Fire Alarm", "type": "fire_alarm", "room": "living_room", "fire_alarm_active": False, "status": "off"},
-    "sprinkler1": {"name": "Living Room Sprinkler", "type": "sprinkler", "room": "living_room", "sprinkler_active": False, "status": "off"},
+    "fire_alarm1": {"name": "Living Room Fire Alarm", "type": "fire_alarm", "room": "living_room", "status": "off"},
+    "sprinkler1": {"name": "Living Room Sprinkler", "type": "sprinkler", "room": "living_room", "status": "off"},
 }
 
 @router.get("/", response_model=Dict[str, Device])
 def list_devices(user = Depends(verify_user)):
     return devices
+
+@router.get("/{device_id}", response_model=Device)
+def get_device(device_id: str, user = Depends(verify_user)):
+    if device_id not in devices:
+        raise HTTPException(status_code=404, detail="Device not found")
+    return devices[device_id]
 
 @router.post("/{device_id}/command", response_model=CommandResponse)
 def send_command(device_id: str, command: DeviceCommand, user = Depends(verify_user)):

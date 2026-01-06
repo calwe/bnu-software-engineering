@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { listDevices, type Device } from "@/lib/api/appliances"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction } from "@/components/ui/card"
@@ -22,6 +20,9 @@ export default function AppliancesCard() {
     }
 
     fetchDevices()
+
+    const interval = setInterval(fetchDevices, 1000)
+    return () => clearInterval(interval)
   }, [])
 
   if (loading) {
@@ -41,6 +42,7 @@ export default function AppliancesCard() {
         <CardTitle>Appliances</CardTitle>
         <CardDescription>Connected Appliances</CardDescription>
       </CardHeader>
+
       <CardContent>
         {Object.entries(devices).map(([id, device]) => (
           <div key={device.name} className="p-2 grid gap-6">
