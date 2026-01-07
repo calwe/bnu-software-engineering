@@ -15,10 +15,8 @@ export default function OccupancyCard() {
     async function handleUpdate() {
       try {
         await occupancyCheck()
-        console.log("Polled occupancy")
       } catch (error) {
         console.error('Error:', error)
-      } finally {
       }
     }
 
@@ -27,13 +25,16 @@ export default function OccupancyCard() {
         try {
           const occupancyData = await getOccupancy()
           setOccupancy(occupancyData)
+        } catch (error) {
+          console.error("Error fetching occupancy:", error)
+        }
+        try {
           const monitoringData = await listMonitoringDevices()
           setMonitoringDevices(monitoringData)
         } catch (error) {
-          console.error("Error fetching occupancy:", error)
-        } finally {
-          setLoading(false)
+          console.error("Error fetching monitoring devices:", error)
         }
+        setLoading(false)
       }
   
       fetchOccupancy()

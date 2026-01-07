@@ -10,19 +10,14 @@ router = APIRouter()
 class OccupancyResponse(BaseModel):
     message: str
 
-monitoring_device_states = {
-    "motionSensors" : {},
-    "cameras" : {}
-}
-
 RoomsOccupancy : Dict[str, bool] = {}
 
 APPLIANCES_SERVICE_URL = os.getenv("APPLIANCES_SERVICE_URL", "http://appliances:8000")
 
 async def get_monitoring_devices(token: str):
-    global monitoring_device_states
     """Gets all camera and motion sensor devices from appliances service"""
     try:
+        monitoring_device_states = {}
         async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(
                 f"{APPLIANCES_SERVICE_URL}/appliances/",
@@ -38,13 +33,13 @@ async def get_monitoring_devices(token: str):
             # device_key is now the device ID
             for device_id, device in devices.items():
                 device_type = device.get("type")
-                if device_type == "motion_sensor":
-                    monitoring_device_states["motionSensors"][device_id] = device
+                if device_type == "motion_sensor" or device_type == "camera":
+                    monitoring_device_states[device_id] = device
+                    #Populate the RoomsOccupancy dictionary of rooms - if a device is in a room
+                    #not in the dictionary already, add it.
+                    # if it is, set it to false so that it can be checked and updated in the check_occupany function
                     RoomsOccupancy[device["room"]] = False
-                elif device_type == "camera":
-                    monitoring_device_states["cameras"][device_id] = device
-                    RoomsOccupancy[device["room"]] = False
-            #print(f"Monitoring devices found: {monitoring_device_states}")
+        return monitoring_device_states
     except Exception as e:
         print(f"Error getting security devices: {e}")
         return {"alarms": []}
@@ -57,12 +52,11 @@ async def check_occupancy(request: Request, user = Depends(verify_user)):
     
     try:
         # Get monitoring devices
-        await get_monitoring_devices(token)
-        securityAlert = False
-        for device_id, device in monitoring_device_states["cameras"].items():
-            RoomsOccupancy[device["room"]] = device["peopleDetected"]
-        for device_id, device in monitoring_device_states["motionSensors"].items():
-            RoomsOccupancy[device["room"]] = device["peopleDetected"]
+        monitoring_device_states = await get_monitoring_devices(token)
+        for device_id, device in monitoring_device_states.items():
+            # if any device detects people in room, set that room to occupied
+            if (device["peopleDetected"]):
+                RoomsOccupancy[device["room"]] = True
     
     except Exception as e:
         print(f"Error in update_readings: {e}")
