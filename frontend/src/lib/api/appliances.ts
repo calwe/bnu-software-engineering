@@ -7,6 +7,7 @@ export interface Device {
   status?: string;
   temperature?: number;
   locked?: boolean;
+  peopleDetected?: boolean;
 }
 
 export const listDevices = async (): Promise<Record<string, Device>> => {

@@ -12,20 +12,13 @@ class Device(BaseModel):
     status: Optional[str] = None
     temperature: Optional[int] = None
     locked: Optional[bool] = None
-
-
-class Camera(Device):
-    peopleSpotted: bool = False
-    
-
-class MotionSensor(Device):
-    motionDetected: bool = False
-
+    peopleDetected: Optional[bool] = None
 
 class DeviceCommand(BaseModel):
     status: Optional[str] = None
     temperature: Optional[int] = None
     locked: Optional[bool] = None
+    peopleDetected: Optional[bool] = None
 
 class CommandResponse(BaseModel):
     message: str
@@ -46,9 +39,11 @@ devices: Dict[str, dict] = {
     "door1": {"name": "Front Door", "type": "door", "locked": True},
     "fire_alarm1": {"name": "Living Room Fire Alarm", "type": "fire_alarm", "room": "living_room", "status": "off"},
     "sprinkler1": {"name": "Living Room Sprinkler", "type": "sprinkler", "room": "living_room", "status": "off"},
-    "camera1" : {"name": "Living Room Camera", "type": "camera", "room": "living_room", "status": "on", "peopleSpotted": False},
-    "motionSensor1" : {"name": "Living Room Motion Sensor", "type": "motion_sensor", "room": "living_room", "status": "on", "motionDetected": True},
-    "burglarAlarm": {"name": "Burglar Alarm", "type": "security_alarm", "status": "off"}
+    "camera1" : {"name": "Living Room Camera", "type": "camera", "room": "living_room", "status": "on", "peopleDetected": False},
+    "camera2" : {"name": "Kitchen Camera", "type": "camera", "room": "kitchen", "status": "on", "peopleDetected": True},
+    "motionSensor1" : {"name": "Living Room Motion Sensor", "type": "motion_sensor", "room": "living_room", "status": "on", "peopleDetected": False},
+    "motionSensor2" : {"name": "Kitchen Motion Sensor", "type": "motion_sensor", "room": "kitchen", "status": "on", "peopleDetected": True},
+    "motionSensor3" : {"name": "Bedroom Motion Sensor", "type": "motion_sensor", "room": "bedroom", "status": "on", "peopleDetected": False},
 }
 
 @router.get("/", response_model=Dict[str, Device])

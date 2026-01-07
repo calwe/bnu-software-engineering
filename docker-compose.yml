@@ -53,19 +53,19 @@ services:
       - ./services/energy/app:/code/app
     depends_on:
       - appliances
-  security_monitoring:
-    image: security-monitoring-service:dev
+  occupancy:
+    image: occupancy-service:dev
     command: "fastapi dev app/main.py --host 0.0.0.0"
     ports:
       - "8006:8000"
     build:
-      context: ./services/security_monitoring
+      context: ./services/occupancy
     env_file:
       - ./services/.env
     environment:
-      - SECURITY_SERVICE_URL=http://security_monitoring:8000
+      - APPLIANCES_SERVICE_URL=http://appliances:8000
     volumes:
-      - ./services/security/app:/code/app
+      - ./services/occupancy/app:/code/app
     depends_on:
       - appliances
 
