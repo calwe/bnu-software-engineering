@@ -13,22 +13,20 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
   const status = device.status ?? ""
 
   const [lightStatus, setLightStatus] = useState(device.status ?? "")
-  const [peopleDetected, setPeopleDetected] = useState(device.peopleDetected ?? false)
 
   async function handleClick() {
     try {
       const newStatus = lightStatus === 'on' ? 'off' : 'on'
       await sendCommand(id, { status: newStatus })
-      setLightStatus(newStatus)
+      //setLightStatus(newStatus)
     } catch (error) {
       console.log('Error:', error)
     }
   }
   async function handleTest() {
     try {
-      const newStatus = !peopleDetected
+      const newStatus = !device.peopleDetected
       await sendCommand(id, { peopleDetected: newStatus })
-      setPeopleDetected(newStatus)
     } catch (error) {
       console.log('Error:', error)
     }
@@ -47,7 +45,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
         <div 
           onClick={handleClick} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
-            ${status === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+            ${device.status === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
         >
           <div className="w-6 h-6 bg-white rounded-full shadow-md" />
@@ -62,7 +60,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
         <div 
           onClick={handleTest} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
-            ${peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+            ${device.peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
         >
           <div className="w-6 h-6 bg-white rounded-full shadow-md" />

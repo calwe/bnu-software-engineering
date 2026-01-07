@@ -1,18 +1,16 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardAction } from "@/components/ui/card";
 import { useState, useEffect } from "react"
-import { occupancyCheck, getOccupancy } from "@/lib/api/occupancy"
+import { occupancyCheck, getOccupancy, listMonitoringDevices } from "@/lib/api/occupancy"
+import { type Device } from "@/lib/api/appliances"
 
-export default function SecurityCard() {
+export default function OccupancyCard() {
   const [occupancy, setOccupancy] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
+  const [monitoringDevices, setMonitoringDevices] = useState<Record<string, Device>>({})
 
   useEffect(() => {
-      const timeout = setInterval(() => {
-        handleUpdate()
-      }, 2000)
-  
-      return () => clearInterval(timeout)
-    }, [])
+      handleUpdate();
+    }, [JSON.stringify(monitoringDevices)])
   
     async function handleUpdate() {
       try {
@@ -27,8 +25,10 @@ export default function SecurityCard() {
   useEffect(() => {
       async function fetchOccupancy() {
         try {
-          const data = await getOccupancy()
-          setOccupancy(data)
+          const occupancyData = await getOccupancy()
+          setOccupancy(occupancyData)
+          const monitoringData = await listMonitoringDevices()
+          setMonitoringDevices(monitoringData)
         } catch (error) {
           console.error("Error fetching occupancy:", error)
         } finally {
@@ -41,7 +41,7 @@ export default function SecurityCard() {
       const interval = setInterval(fetchOccupancy, 1000)
       return () => clearInterval(interval)
     }, [])
-  
+
 
   if (loading) {
     return (
