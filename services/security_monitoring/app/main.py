@@ -1,7 +1,6 @@
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.security import router as security_router
+from app.security_monitoring import router as security_monitoring_router
 import os
 
 app = FastAPI()
@@ -16,4 +15,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(security_router, prefix="/security")
+app.include_router(security_monitoring_router, prefix="/security_monitoring")

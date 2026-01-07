@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Device } from "@/lib/api/appliances"
 import { sendCommand } from "@/lib/api/appliances"
+import Switch from "react-switch";
 
 interface DeviceControlProps {
   id: string
@@ -46,7 +47,23 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
     )
   }
 
-  if (type === "fire_alarm" || type === "sprinkler") {
+  if (type === "camera"){
+    return (
+      <div className="flex flex-col gap-2 items-center">
+            <Switch onChange={handleClick} checked={status === "on"}/>
+        </div>
+    )
+  }
+
+  if (type === "motion_sensor"){
+    return (
+      <div className="flex flex-col gap-2 items-center">
+            <Switch onChange={handleClick} checked={status === "on"}/>
+        </div>
+    )
+  }
+
+  if (type === "fire_alarm" || type === "sprinkler" || type === "security_alarm") {
     return (
       <div className="flex flex-col gap-2 items-center">
         <StatusLight />

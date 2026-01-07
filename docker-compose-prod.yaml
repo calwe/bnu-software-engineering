@@ -23,11 +23,11 @@ services:
       context: ./services/appliances
     env_file:
       - ./services/.env.production
-  security:
-    image: security-service:prod
+  security_monitoring:
+    image: security-monitoring-service:prod
     ports:
-      - "8005:80"
+      - "8006:80"
     build:
-      context: ./services/security
+      context: ./services/security_monitoring
     env_file:
       - ./services/.env.production
