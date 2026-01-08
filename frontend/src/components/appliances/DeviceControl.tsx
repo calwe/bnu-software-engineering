@@ -36,6 +36,9 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
   useEffect(() => setStatus(device.states["status"] ?? ""),
             [device.states["status"]])
 
+   useEffect(() => setPeopleDetected(device.states["peopleDetected"] ?? false),
+            [device.states["peopleDetected"]])
+
   const StatusLight = () => (
     <span
       className={`inline-block w-8 h-8 rounded-full ${status === "on" ? "bg-red-600 animate-pulse" : "bg-gray-300"}`}
