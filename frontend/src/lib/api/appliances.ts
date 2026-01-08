@@ -1,16 +1,12 @@
 import { appliancesApi } from "./client";
 
+export type StateValue = string | number | boolean;
+
 export interface Device {
   name: string;
   type: string;
   room?: string;
-  status?: string;
-  // for heaters
-  temperature?: number;
-  // for doors
-  locked?: boolean;
-  // for cameras and motion sensors
-  peopleDetected?: boolean;
+  states: Record<string, StateValue>;
 }
 
 export const listDevices = async (): Promise<Record<string, Device>> => {
@@ -18,7 +14,7 @@ export const listDevices = async (): Promise<Record<string, Device>> => {
   return result.data;
 };
 
-export const sendCommand = async (deviceId: string, command: Record<string, any>) => {
-  const result = await appliancesApi.post(`/appliances/${deviceId}/command`, command)
+export const updateState = async (deviceId: string, state: string, value: StateValue) => {
+  const result = await appliancesApi.post(`/appliances/${deviceId}/updateState`, { state: state, value: value })
   return result.data
 };
