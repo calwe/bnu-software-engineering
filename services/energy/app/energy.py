@@ -44,9 +44,6 @@ previous_room_states = {room_id: False for room_id in rooms.keys()}
 APPLIANCES_SERVICE_URL = os.getenv("APPLIANCES_SERVICE_URL", "http://appliances:8000")
 OCCUPANCY_SERVICE_URL = "http://occupancy:8000"
 
-print(f"Appliances Service URL: {APPLIANCES_SERVICE_URL}")  
-print(f"Occupancy Service URL: {OCCUPANCY_SERVICE_URL}")
-
 async def get_occupancy_data(token: str):
     """Gets occupancy data from occupancy service"""
     try:
