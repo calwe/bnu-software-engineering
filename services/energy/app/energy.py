@@ -115,8 +115,8 @@ async def toggle_lights(light_devices: List[Dict[str, str]], status: str, token:
         for light in light_devices:
             try:
                 response = await client.post(
-                    f"{APPLIANCES_SERVICE_URL}/appliances/{light['id']}/command",
-                    json={"status": status},
+                    f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/updateState",
+                    json={"state": "status", "value": status},
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=10.0
                 )
@@ -158,8 +158,7 @@ async def get_power_consumption(token: str)  -> Dict[str, object]:
 
                 if device_type == "sprinkler":
                     continue
-
-                status = device.get("status", "off")
+                status = device.get("states").get("status", "off")
                 device_name = device.get("name", device_id)
                 power_rating = power_ratings.get(device_type, 0.0)
                 

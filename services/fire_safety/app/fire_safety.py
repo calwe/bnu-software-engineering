@@ -101,8 +101,8 @@ async def toggle_devices(device_ids: List[str], status: str, token: str):
         for device_id in device_ids:
             try:
                 response = await client.post(
-                    f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/command",
-                    json={"status": status},
+                    f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/updateState",
+                    json={"state": "status", "value": status},
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=10.0
                 )
