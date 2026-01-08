@@ -10,14 +10,20 @@ class Device(BaseModel):
     type: str
     room: Optional[str] = None
     status: Optional[str] = None
+    # for heaters
     temperature: Optional[int] = None
+    # for doors
     locked: Optional[bool] = None
+    # for motion sensors and cameras
     peopleDetected: Optional[bool] = None
 
 class DeviceCommand(BaseModel):
     status: Optional[str] = None
+    # for heaters
     temperature: Optional[int] = None
+    # for doors
     locked: Optional[bool] = None
+    # for motion sensors and cameras
     peopleDetected: Optional[bool] = None
 
 class CommandResponse(BaseModel):

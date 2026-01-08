@@ -12,10 +12,13 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
   const { type } = device
   const status = device.status ?? ""
 
+  const [lightStatus, setLightStatus] = useState(device.status ?? "")
+
   async function handleClick() {
     try {
-      const newStatus = status === 'on' ? 'off' : 'on'
+      const newStatus = lightStatus === 'on' ? 'off' : 'on'
       await sendCommand(id, { status: newStatus })
+      setLightStatus(newStatus)
     } catch (error) {
       console.log('Error:', error)
     }
@@ -42,7 +45,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
         <div 
           onClick={handleClick} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
-            ${status === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+            ${lightStatus === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
         >
           <div className="w-6 h-6 bg-white rounded-full shadow-md" />

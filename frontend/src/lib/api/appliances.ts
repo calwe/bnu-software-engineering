@@ -5,8 +5,11 @@ export interface Device {
   type: string;
   room?: string;
   status?: string;
+  // for heaters
   temperature?: number;
+  // for doors
   locked?: boolean;
+  // for cameras and motion sensors
   peopleDetected?: boolean;
 }
 
