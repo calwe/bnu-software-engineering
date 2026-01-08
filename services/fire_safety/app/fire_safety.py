@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 from app.auth import verify_user
 import httpx
 import os
@@ -50,7 +50,6 @@ async def get_fire_safety_devices(token: str):
                 "doors": []
             }
             
-            # device_key is now the device ID
             for device_id, device in devices.items():
                 device_type = device.get("type")
                 if device_type == "fire_alarm":
@@ -66,14 +65,14 @@ async def get_fire_safety_devices(token: str):
         print(f"Error getting fire safety devices: {e}")
         return {"alarms": [], "sprinklers": [], "doors": []}
 
-async def toggle_devices(device_ids: list, status: str, token: str):
-    """Toggle devices on/off"""
+async def toggle_devices(device_ids: list, state_name: str, value: Union[str, bool], token: str):
+    """Toggles device states """
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
             for device_id in device_ids:
                 response = await client.post(
                     f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/updateState",
-                    json={"state": "status", "value": status},
+                    json={"state": state_name, "value": value},
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=10.0
                 )
@@ -115,15 +114,15 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
                 # Activate alarms
                 if fire_devices["alarms"]:
                     print(f"Activating {len(fire_devices['alarms'])} fire alarms")
-                    await toggle_devices(fire_devices["alarms"], "on", token)
+                    await toggle_devices(fire_devices["alarms"], "status", "on", token)
                 
                 if fire_devices["sprinklers"]:
                     print(f"Activating {len(fire_devices['sprinklers'])} sprinklers")
-                    await toggle_devices(fire_devices["sprinklers"], "on", token)
+                    await toggle_devices(fire_devices["sprinklers"], "status", "on", token)
                 
                 if fire_devices["doors"]:
                     print(f"Unlocking {len(fire_devices['doors'])} doors")
-                    await toggle_devices(fire_devices["doors"], "off", token)
+                    await toggle_devices(fire_devices["doors"], "locked", False, token)
                     
                 if not fire_devices["alarms"] and not fire_devices["sprinklers"]:
                     print("No fire devices found")
@@ -133,16 +132,16 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
                 # Deactivate alarms
                 if fire_devices["alarms"]:
                     print(f"Deactivating {len(fire_devices['alarms'])} fire alarms")
-                    await toggle_devices(fire_devices["alarms"], "off", token)
+                    await toggle_devices(fire_devices["alarms"], "status", "off", token)
                 
                 # Deactivate sprinklers
                 if fire_devices["sprinklers"]:
                     print(f"Deactivating {len(fire_devices['sprinklers'])} sprinklers")
-                    await toggle_devices(fire_devices["sprinklers"], "off", token)
+                    await toggle_devices(fire_devices["sprinklers"], "status", "off", token)
 
                 if fire_devices["doors"]:
                     print(f"Locking {len(fire_devices['doors'])} doors")
-                    await toggle_devices(fire_devices["doors"], "on", token)
+                    await toggle_devices(fire_devices["doors"], "locked", True, token)
         except Exception as e:
             print(f"Error in update_readings: {e}")
         
