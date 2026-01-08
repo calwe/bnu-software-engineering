@@ -122,8 +122,8 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
                     await toggle_devices(fire_devices["sprinklers"], "on", token)
                 
                 if fire_devices["doors"]:
-                    print(f"Unlocking {len(fire_devices['doors'])} doors for emergency exit")
-                    await toggle_devices(fire_devices["doors"], "unlocked", token)
+                    print(f"Unlocking {len(fire_devices['doors'])} doors")
+                    await toggle_devices(fire_devices["doors"], "off", token)
                     
                 if not fire_devices["alarms"] and not fire_devices["sprinklers"]:
                     print("No fire devices found")
@@ -142,7 +142,7 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
 
                 if fire_devices["doors"]:
                     print(f"Locking {len(fire_devices['doors'])} doors")
-                    await toggle_devices(fire_devices["doors"], "locked", token)
+                    await toggle_devices(fire_devices["doors"], "on", token)
         except Exception as e:
             print(f"Error in update_readings: {e}")
         

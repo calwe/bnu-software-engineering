@@ -59,7 +59,6 @@ async def get_light_devices(token: str):
             devices = response.json()
             lights = {}
             
-            # device_id is now the dictionary key
             for device_id, device in devices.items():
                 device_type = device.get("type")
                 if device_type == "light":
@@ -116,10 +115,9 @@ async def get_power_consumption(token: str):
                 "heater": HEATER_POWER_RATING
             }
             
-            # device_id is now the dictionary key
             for device_id, device in devices.items():
                 device_type = device.get("type", "unknown")
-                if device_type == "sprinkler":
+                if device_type == "sprinkler" or device_type == "door":
                     continue
                 status = device.get("status", "off")
                 device_name = device.get("name", device_id)
@@ -162,7 +160,6 @@ async def get_consumption(request: Request, user = Depends(verify_user)):
         device_breakdown=consumption_data["breakdown"]
     )
 
-#I will change this when we get the occupancy service
 @router.post("/room-status", response_model=EnergyResponse)
 async def update_room_status(status: RoomStatus, request: Request, user = Depends(verify_user)):
     """Updates room empty status and automatically controls lights"""
