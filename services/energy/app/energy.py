@@ -42,6 +42,31 @@ rooms = {
 previous_room_states = {room_id: False for room_id in rooms.keys()}
 
 APPLIANCES_SERVICE_URL = os.getenv("APPLIANCES_SERVICE_URL", "http://appliances:8000")
+OCCUPANCY_SERVICE_URL = "http://occupancy:8000"
+
+print(f"Appliances Service URL: {APPLIANCES_SERVICE_URL}")  
+print(f"Occupancy Service URL: {OCCUPANCY_SERVICE_URL}")
+
+async def get_occupancy_data(token: str):
+    """Gets occupancy data from occupancy service"""
+    try:
+        print(f"Occupancy Service URL: {OCCUPANCY_SERVICE_URL}")
+
+        print(f"Appliances Service URL: {APPLIANCES_SERVICE_URL}")
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{OCCUPANCY_SERVICE_URL}/occupancy/",
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10.0
+            )
+            if response.status_code != 200:
+                print(f"Failed to fetch occupancy: {response.status_code}")
+                return {}
+            
+            return response.json()
+    except Exception as e:
+        print(f"Error getting occupancy data: {e}")
+        return {}
 
 async def get_light_devices(token: str):
     """Gets all light devices from appliances service"""
@@ -65,22 +90,19 @@ async def get_light_devices(token: str):
                     room = device.get("room", "unknown")
                     if room not in lights:
                         lights[room] = []
-                    lights[room].append({
-                        "id": device_id,
-                        "name": device.get("name", device_id)
-                    })
+                    lights[room].append(device_id)
             
+            print(f"Light devices found: {lights}")
             return lights
     except Exception as e:
         print(f"Error getting devices: {e}")
         return {}
 
-async def toggle_lights(light_devices: list, status: str, token: str):
+async def toggle_lights(device_ids: list, status: str, token: str):
     """Toggle lights on/off"""
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
-            for light in light_devices:
-                device_id = light["id"]
+            for device_id in device_ids:
                 response = await client.post(
                     f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/updateState",
                     json={"state": "status", "value": status},
@@ -160,74 +182,50 @@ async def get_consumption(request: Request, user = Depends(verify_user)):
         device_breakdown=consumption_data["breakdown"]
     )
 
-@router.post("/room-status", response_model=EnergyResponse)
-async def update_room_status(status: RoomStatus, request: Request, user = Depends(verify_user)):
-    """Updates room empty status and automatically controls lights"""
+@router.post("/auto-control")
+async def auto_control(request: Request, user = Depends(verify_user)):
+    """Automatically control lights based on occupancy"""
     global previous_room_states
     
-    room_id = status.room_id
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "") if auth_header else ""
     
-    if room_id not in rooms:
-        raise HTTPException(status_code=404, detail="Room not found")
+    occupancy_data = await get_occupancy_data(token)
     
-    print(f"Room status update - Room: {status.room_name}, Empty: {status.is_empty}")
+    light_devices = await get_light_devices(token)
     
-    # Update room status
-    rooms[room_id]["is_empty"] = status.is_empty
+    changes = []
     
-    lights_turned_on = False
-    lights_turned_off = False
-    controlled_light_names = []
-    
-    # Check if room state has changed
-    state_changed = previous_room_states.get(room_id, False) != status.is_empty
-    
-    # Only contact appliance service if room state has changed
-    if state_changed:
-        # Extract token from request headers
-        auth_header = request.headers.get("Authorization", "")
-        token = auth_header.replace("Bearer ", "") if auth_header else ""
+    for room_id, room_info in rooms.items():
+        is_occupied = occupancy_data.get(room_id, False)
+        room_info["is_empty"] = not is_occupied
         
-        try:
-            # Get light devices organized by room
-            light_devices = await get_light_devices(token)
-            
-            if status.is_empty:
-                print(f"No presence detected in {status.room_name}. Turning off lights...")
+        # Only process if occupancy state has changed
+        if is_occupied != previous_room_states[room_id]:
 
-                # Turn off lights in this room
-                room_lights = light_devices.get(room_id, [])
-                if room_lights:
-                    print(f"Turning off {len(room_lights)} lights in {status.room_name}")
-                    await toggle_lights(room_lights, "off", token)
-                    lights_turned_off = True
-                    controlled_light_names = [light["name"] for light in room_lights]
-                    
-                if not room_lights:
-                    print(f"No lights found in {status.room_name}")
-            else:
-                print(f"Presence detected in {status.room_name}. Turning on lights...")
-                
-                # Turn on lights in this room
-                room_lights = light_devices.get(room_id, [])
-                if room_lights:
-                    print(f"Turning on {len(room_lights)} lights in {status.room_name}")
-                    await toggle_lights(room_lights, "on", token)
-                    lights_turned_on = True
-                    controlled_light_names = [light["name"] for light in room_lights]
-        
-        except Exception as e:
-            print(f"Error in update_room_status: {e}")
-        
-        # Update previous state
-        previous_room_states[room_id] = status.is_empty
+            room_lights = light_devices.get(room_id, [])
+            
+            if room_lights:
+                try:
+                    if is_occupied:
+                        print(f"{room_info['name']} is occupied. Turning on {len(room_lights)} lights...")
+                        await toggle_lights(room_lights, "on", token)
+                        changes.append({
+                            "room": room_info["name"],
+                            "status": "on",
+                            "lights": len(room_lights)
+                        })
+                    else:
+                        print(f"{room_info['name']} is empty. Turning off {len(room_lights)} lights...")
+                        await toggle_lights(room_lights, "off", token)
+                        changes.append({
+                            "room": room_info["name"],
+                            "status": "off",
+                            "lights": len(room_lights)
+                        })
+                except Exception as e:
+                    print(f"Error controlling lights in {room_info['name']}: {e}")
+            
+            previous_room_states[room_id] = is_occupied
     
-    return EnergyResponse(
-        message="Room devices status updated",
-        room_id=room_id,
-        room_name=status.room_name,
-        is_empty=status.is_empty,
-        lights_turned_on=lights_turned_on,
-        lights_turned_off=lights_turned_off,
-        light_names=controlled_light_names
-    )
+    return {"changes": changes}
