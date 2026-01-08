@@ -148,7 +148,7 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
         if not auth_header or not auth_header.startswith("Bearer "):
             raise HTTPException(status_code=401, detail="Authorization header missing or invalid")
 
-        token = auth_header.remove_prefix("Bearer ").strip()
+        token = auth_header.removeprefix("Bearer ").strip()
         
         try:
             # Get fire safety devices
