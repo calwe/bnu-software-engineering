@@ -45,7 +45,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
         <div 
           onClick={handleClick} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
-            ${lightStatus === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+            ${status === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
         >
           <div className="w-6 h-6 bg-white rounded-full shadow-md" />
