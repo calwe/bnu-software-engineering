@@ -12,6 +12,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
   const { type } = device
 
   const [status, setStatus] = useState(device.states.status ?? "")
+  const [peopleDetected, setPeopleDetected] = useState(device.states.peopleDetected ?? false)
 
   async function handleClick() {
     try {
@@ -22,10 +23,11 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
       console.log('Error:', error)
     }
   }
-  async function setPeopleDetected() {
+  async function updatePeopleDetected() {
     try {
-      const newStatus = !device.states.peopleDetected
+      const newStatus = !peopleDetected
       await updateState(id,  "peopleDetected", newStatus )
+      setPeopleDetected(newStatus)
     } catch (error) {
       console.log('Error:', error)
     }
@@ -60,9 +62,9 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
     return (
       <div className="flex flex-col gap-2 items-center">
         <div 
-          onClick={setPeopleDetected} 
+          onClick={updatePeopleDetected} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
-            ${device.states.peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+            ${peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
         >
           <div className="w-6 h-6 bg-white rounded-full shadow-md" />

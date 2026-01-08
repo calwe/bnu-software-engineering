@@ -45,7 +45,7 @@ async def get_monitoring_devices(token: str):
         return monitoring_device_states
     except Exception as e:
         print(f"Error getting monitoring devices: {e}")
-        return {"alarms": []}
+        return {}
 
 @router.post("/occupancy_check", response_model=OccupancyResponse)
 async def check_occupancy(request: Request, user = Depends(verify_user)):
