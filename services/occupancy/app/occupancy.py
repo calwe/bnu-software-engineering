@@ -38,9 +38,8 @@ async def get_monitoring_devices(token: str):
                         print(f"Device {device_id} has no room assigned")
                         continue
                     monitoring_device_states[device_id] = device
-                    #Populate the RoomsOccupancy dictionary of rooms - if a device is in a room
-                    #not in the dictionary already, add it.
-                    # if it is, set it to false so that it can be checked and updated in the check_occupany function
+                    
+                    # Initialize room in RoomsOccupancy dict (defaults to False)
                     RoomsOccupancy[device["room"]] = False
         return monitoring_device_states
     except Exception as e:
