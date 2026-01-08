@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from app.auth import verify_user
-from app.devices import Device, StateValue, Light, Heater, Door, FireAlarm, Sprinkler
+from app.devices import Device, StateValue, Light, Heater, Door, FireAlarm, Sprinkler, Camera, MotionSensor
 import logging
 
 router = APIRouter()
@@ -32,6 +32,11 @@ devices: Dict[str, Device] = {
     "door1": Door(name = "Front Door"),
     "fire_alarm1": FireAlarm(name = "Living Room Fire Alarm", room = "living_room"),
     "sprinkler1": Sprinkler(name = "Living Room Sprinkler", room = "living_room"),
+    "camera1" : Camera(name = "Living Room Camera", room = "living_room"),
+    "camera2" : Camera(name = "Kitchen Camera", room = "kitchen"),
+    "motionSensor1": MotionSensor(name = "Living Room Motion Sensor", room = "living_room"),
+    "motionSensor2": MotionSensor(name = "Kitchen Motion Sensor", room = "kitchen"),
+    "motionSensor3": MotionSensor(name = "Bedroom Motion Sensor", room = "bedroom")
 }
 
 # ===============================

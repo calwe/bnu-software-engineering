@@ -12,6 +12,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
   const { type } = device
 
   const [status, setStatus] = useState(device.states.status ?? "")
+  const [peopleDetected, setPeopleDetected] = useState(device.states.peopleDetected ?? false)
 
   async function handleClick() {
     try {
@@ -22,9 +23,21 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
       console.log('Error:', error)
     }
   }
+  async function updatePeopleDetected() {
+    try {
+      const newStatus = !peopleDetected
+      await updateState(id,  "peopleDetected", newStatus )
+      setPeopleDetected(newStatus)
+    } catch (error) {
+      console.log('Error:', error)
+    }
+  }
 
   useEffect(() => setStatus(device.states["status"] ?? ""),
             [device.states["status"]])
+
+   useEffect(() => setPeopleDetected(device.states["peopleDetected"] ?? false),
+            [device.states["peopleDetected"]])
 
   const StatusLight = () => (
     <span
@@ -40,6 +53,21 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
           onClick={handleClick} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
             ${status === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+          `}
+        >
+          <div className="w-6 h-6 bg-white rounded-full shadow-md" />
+        </div>
+      </div>
+    )
+  }
+
+  if (type === "motion_sensor" || type === "camera"){
+    return (
+      <div className="flex flex-col gap-2 items-center">
+        <div 
+          onClick={updatePeopleDetected} 
+          className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
+            ${peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
         >
           <div className="w-6 h-6 bg-white rounded-full shadow-md" />
