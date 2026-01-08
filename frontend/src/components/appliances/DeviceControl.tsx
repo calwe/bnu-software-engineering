@@ -12,18 +12,15 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
   const { type } = device
   const status = device.status ?? ""
 
-  const [lightStatus, setLightStatus] = useState(device.status ?? "")
-
   async function handleClick() {
     try {
-      const newStatus = lightStatus === 'on' ? 'off' : 'on'
+      const newStatus = status === 'on' ? 'off' : 'on'
       await sendCommand(id, { status: newStatus })
-      //setLightStatus(newStatus)
     } catch (error) {
       console.log('Error:', error)
     }
   }
-  async function handleTest() {
+  async function setPeopleDetected() {
     try {
       const newStatus = !device.peopleDetected
       await sendCommand(id, { peopleDetected: newStatus })
@@ -45,7 +42,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
         <div 
           onClick={handleClick} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
-            ${device.status === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+            ${status === "on" ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
         >
           <div className="w-6 h-6 bg-white rounded-full shadow-md" />
@@ -58,7 +55,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
     return (
       <div className="flex flex-col gap-2 items-center">
         <div 
-          onClick={handleTest} 
+          onClick={setPeopleDetected} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
             ${device.peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
