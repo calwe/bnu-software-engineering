@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Device } from "@/lib/api/appliances"
-import { sendCommand } from "@/lib/api/appliances"
+import { updateState } from "@/lib/api/appliances"
 
 interface DeviceControlProps {
   id: string
@@ -10,21 +10,23 @@ interface DeviceControlProps {
 export default function DeviceControl({ id, device }: DeviceControlProps) {
   
   const { type } = device
-  const status = device.status ?? ""
 
-  const [lightStatus, setLightStatus] = useState(device.status ?? "")
+  const [status, setStatus] = useState(device.states.status ?? "")
 
   async function handleClick() {
     try {
-      const newStatus = lightStatus === 'on' ? 'off' : 'on'
-      await sendCommand(id, { status: newStatus })
-      setLightStatus(newStatus)
+      const newStatus = status === 'on' ? 'off' : 'on'
+      await updateState(id, "status", newStatus)
+      setStatus(newStatus)
     } catch (error) {
       console.log('Error:', error)
     }
   }
 
-    const StatusLight = () => (
+  useEffect(() => setStatus(device.states["status"] ?? ""),
+            [device.states["status"]])
+
+  const StatusLight = () => (
     <span
       className={`inline-block w-8 h-8 rounded-full ${status === "on" ? "bg-red-600 animate-pulse" : "bg-gray-300"}`}
       title={status === "on" ? "Active" : "Inactive"}

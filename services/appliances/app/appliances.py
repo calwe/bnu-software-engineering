@@ -2,42 +2,26 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional, Dict
 from app.auth import verify_user
+from app.devices import Device, StateValue, Light, Heater, Door, FireAlarm, Sprinkler
 
 router = APIRouter()
 
-class Device(BaseModel):
-    name: str
-    type: str
-    room: Optional[str] = None
-    status: Optional[str] = None
-    temperature: Optional[int] = None
-    locked: Optional[bool] = None
-
-class DeviceCommand(BaseModel):
-    status: Optional[str] = None
-    temperature: Optional[int] = None
-    locked: Optional[bool] = None
-
-class CommandResponse(BaseModel):
-    message: str
-    device: str
-    new_state: Device
-
-class FireSafetyTrigger(BaseModel):
-    activate: bool
-
-devices: Dict[str, dict] = {
-    "light1": {"name": "Living Room Main Light", "type": "light", "room": "living_room", "status": "off"},
-    "light2": {"name": "Living Room Lamp", "type": "light", "room": "living_room", "status": "off"},
-    "light3": {"name": "Bedroom Ceiling Light", "type": "light", "room": "bedroom", "status": "off"},
-    "light4": {"name": "Bedroom Bedside Lamp", "type": "light", "room": "bedroom", "status": "off"},
-    "light5": {"name": "Kitchen Main Light", "type": "light", "room": "kitchen", "status": "off"},
-    "light6": {"name": "Kitchen Counter Light", "type": "light", "room": "kitchen", "status": "off"},
-    "heater1": {"name": "Living Room Heater", "type": "heater", "room": "living_room", "temperature": 20},
-    "door1": {"name": "Front Door", "type": "door", "locked": True},
-    "fire_alarm1": {"name": "Living Room Fire Alarm", "type": "fire_alarm", "room": "living_room", "status": "off"},
-    "sprinkler1": {"name": "Living Room Sprinkler", "type": "sprinkler", "room": "living_room", "status": "off"},
+devices: Dict[str, Device] = {
+    "light1": Light(name = "Living Room Main Light", room = "living_room"),
+    "light2": Light(name = "Living Room Lamp", room = "living_room"),
+    "light3": Light(name = "Bedroom Ceiling Light", room = "bedroom"),
+    "light4": Light(name = "Bedroom Bedside Lamp", room = "bedroom"),
+    "light5": Light(name = "Kitchen Main Light", room = "kitchen"),
+    "light6": Light(name = "Kitchen Counter Light", room = "kitchen"),
+    "heater1": Heater(name = "Living Room Heater", room = "living_room"),
+    "door1": Door(name = "Front Door"),
+    "fire_alarm1": FireAlarm(name = "Living Room Fire Alarm", room = "living_room"),
+    "sprinkler1": Sprinkler(name = "Living Room Sprinkler", room = "living_room"),
 }
+
+class UpdateStateRequest(BaseModel):
+    state: str
+    value: StateValue
 
 @router.get("/", response_model=Dict[str, Device])
 def list_devices(user = Depends(verify_user)):
@@ -49,19 +33,20 @@ def get_device(device_id: str, user = Depends(verify_user)):
         raise HTTPException(status_code=404, detail="Device not found")
     return devices[device_id]
 
-@router.post("/{device_id}/command", response_model=CommandResponse)
-def send_command(device_id: str, command: DeviceCommand, user = Depends(verify_user)):
+@router.post("/{device_id}/updateState", response_model=StateValue)
+def update_state(device_id: str, request: UpdateStateRequest, user = Depends(verify_user)):
     if device_id not in devices:
         raise HTTPException(status_code=404, detail="Device not found")
+
+    device = devices[device_id]
+
+    if request.state not in device.states:
+        raise HTTPException(status_code=404, detail="State not found")
     
-    device_name = devices[device_id].get("name", device_id)
+    device_name = devices[device_id].name
+
+    print(f"Setting '{request.state}'='{request.value}' for {device_id} ({device_name})")
+    old_state = device.states[request.state]
+    device.states[request.state] = request.value
     
-    print(f"Received command for {device_id} ({device_name}): {command.dict(exclude_none=True)}")
-    devices[device_id].update(command.dict(exclude_none=True))
-    print(f"Updated device state: {devices[device_id]}")
-    
-    return CommandResponse(
-        message="Command accepted",
-        device=device_id,
-        new_state=devices[device_id]
-    )
+    return old_state

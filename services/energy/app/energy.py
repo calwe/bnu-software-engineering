@@ -83,8 +83,8 @@ async def toggle_lights(light_devices: list, status: str, token: str):
             for light in light_devices:
                 device_id = light["id"]
                 response = await client.post(
-                    f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/command",
-                    json={"status": status},
+                    f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/updateState",
+                    json={"state": "status", "value": status},
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=10.0
                 )
@@ -121,7 +121,7 @@ async def get_power_consumption(token: str):
                 device_type = device.get("type", "unknown")
                 if device_type == "sprinkler":
                     continue
-                status = device.get("status", "off")
+                status = device.get("states").get("status", "off")
                 device_name = device.get("name", device_id)
     
                 power_rating = power_ratings.get(device_type, 0.0)
