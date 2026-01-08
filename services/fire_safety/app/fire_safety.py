@@ -41,12 +41,13 @@ async def get_fire_safety_devices(token: str):
             )
             if response.status_code != 200:
                 print(f"Failed to fetch devices: {response.status_code}")
-                return {"alarms": [], "sprinklers": []}
+                return {"alarms": [], "sprinklers": [], "doors": []}
             
             devices = response.json()
             fire_devices = {
                 "alarms": [],
-                "sprinklers": []
+                "sprinklers": [],
+                "doors": []
             }
             
             # device_key is now the device ID
@@ -56,12 +57,14 @@ async def get_fire_safety_devices(token: str):
                     fire_devices["alarms"].append(device_id)
                 elif device_type == "sprinkler":
                     fire_devices["sprinklers"].append(device_id)
+                elif device_type == "door":
+                    fire_devices["doors"].append(device_id)
             
             print(f"Fire safety devices found: {fire_devices}")
             return fire_devices
     except Exception as e:
         print(f"Error getting fire safety devices: {e}")
-        return {"alarms": [], "sprinklers": []}
+        return {"alarms": [], "sprinklers": [], "doors": []}
 
 async def toggle_devices(device_ids: list, status: str, token: str):
     """Toggle devices on/off"""
@@ -117,6 +120,10 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
                 if fire_devices["sprinklers"]:
                     print(f"Activating {len(fire_devices['sprinklers'])} sprinklers")
                     await toggle_devices(fire_devices["sprinklers"], "on", token)
+                
+                if fire_devices["doors"]:
+                    print(f"Unlocking {len(fire_devices['doors'])} doors for emergency exit")
+                    await toggle_devices(fire_devices["doors"], "unlocked", token)
                     
                 if not fire_devices["alarms"] and not fire_devices["sprinklers"]:
                     print("No fire devices found")
@@ -132,7 +139,10 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
                 if fire_devices["sprinklers"]:
                     print(f"Deactivating {len(fire_devices['sprinklers'])} sprinklers")
                     await toggle_devices(fire_devices["sprinklers"], "off", token)
-        
+
+                if fire_devices["doors"]:
+                    print(f"Locking {len(fire_devices['doors'])} doors")
+                    await toggle_devices(fire_devices["doors"], "locked", token)
         except Exception as e:
             print(f"Error in update_readings: {e}")
         

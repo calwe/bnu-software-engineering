@@ -34,7 +34,7 @@ devices: Dict[str, dict] = {
     "light5": {"name": "Kitchen Main Light", "type": "light", "room": "kitchen", "status": "off"},
     "light6": {"name": "Kitchen Counter Light", "type": "light", "room": "kitchen", "status": "off"},
     "heater1": {"name": "Living Room Heater", "type": "heater", "room": "living_room", "temperature": 20},
-    "door1": {"name": "Front Door", "type": "door", "locked": True},
+    "door1": {"name": "Front Door", "type": "door", "status": "locked"},
     "fire_alarm1": {"name": "Living Room Fire Alarm", "type": "fire_alarm", "room": "living_room", "status": "off"},
     "sprinkler1": {"name": "Living Room Sprinkler", "type": "sprinkler", "room": "living_room", "status": "off"},
 }
