@@ -72,8 +72,8 @@ async def toggle_devices(device_ids: list, status: str, token: str):
         async with httpx.AsyncClient(follow_redirects=True) as client:
             for device_id in device_ids:
                 response = await client.post(
-                    f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/command",
-                    json={"status": status},
+                    f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/updateState",
+                    json={"state": "status", "value": status},
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=10.0
                 )

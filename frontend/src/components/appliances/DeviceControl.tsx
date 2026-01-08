@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Device } from "@/lib/api/appliances"
-import { sendCommand } from "@/lib/api/appliances"
+import { updateState } from "@/lib/api/appliances"
 
 interface DeviceControlProps {
   id: string
@@ -10,21 +10,36 @@ interface DeviceControlProps {
 export default function DeviceControl({ id, device }: DeviceControlProps) {
   
   const { type } = device
-  const status = device.status ?? ""
 
-  const [lightStatus, setLightStatus] = useState(device.status ?? "")
+  const [status, setStatus] = useState(device.states.status ?? "")
+  const [peopleDetected, setPeopleDetected] = useState(device.states.peopleDetected ?? false)
 
   async function handleClick() {
     try {
-      const newStatus = lightStatus === 'on' ? 'off' : 'on'
-      await sendCommand(id, { status: newStatus })
-      setLightStatus(newStatus)
+      const newStatus = status === 'on' ? 'off' : 'on'
+      await updateState(id, "status", newStatus)
+      setStatus(newStatus)
+    } catch (error) {
+      console.log('Error:', error)
+    }
+  }
+  async function updatePeopleDetected() {
+    try {
+      const newStatus = !peopleDetected
+      await updateState(id,  "peopleDetected", newStatus )
+      setPeopleDetected(newStatus)
     } catch (error) {
       console.log('Error:', error)
     }
   }
 
-    const StatusLight = () => (
+  useEffect(() => setStatus(device.states["status"] ?? ""),
+            [device.states["status"]])
+
+   useEffect(() => setPeopleDetected(device.states["peopleDetected"] ?? false),
+            [device.states["peopleDetected"]])
+
+  const StatusLight = () => (
     <span
       className={`inline-block w-8 h-8 rounded-full ${status === "on" ? "bg-red-600 animate-pulse" : "bg-gray-300"}`}
       title={status === "on" ? "Active" : "Inactive"}
@@ -59,6 +74,20 @@ if (type === 'door') {
       </div>
     )
 }
+  if (type === "motion_sensor" || type === "camera"){
+    return (
+      <div className="flex flex-col gap-2 items-center">
+        <div 
+          onClick={updatePeopleDetected} 
+          className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
+            ${peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+          `}
+        >
+          <div className="w-6 h-6 bg-white rounded-full shadow-md" />
+        </div>
+      </div>
+    )
+  }
 
   if (type === "fire_alarm" || type === "sprinkler") {
     return (
