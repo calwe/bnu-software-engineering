@@ -9,6 +9,8 @@ export interface Device {
   locked?: boolean;
 }
 
+// Add other types!
+
 export const listDevices = async (): Promise<Record<string, Device>> => {
   const result = await appliancesApi.get<Record<string, Device>>("/appliances");
   return result.data;
