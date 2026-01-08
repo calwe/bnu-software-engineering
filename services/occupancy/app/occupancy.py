@@ -26,7 +26,7 @@ async def get_monitoring_devices(token: str):
             )
             if response.status_code != 200:
                 print(f"Failed to fetch devices: {response.status_code}")
-                return {"alarms": []}
+                return {} 
             
             devices = response.json()
             
@@ -34,6 +34,9 @@ async def get_monitoring_devices(token: str):
             
             for device_id, device in devices.items():
                 if device["type"] == "motion_sensor" or device["type"] == "camera":
+                    if "room" not in device:
+                        print(f"Device {device_id} has no room assigned")
+                        continue
                     monitoring_device_states[device_id] = device
                     #Populate the RoomsOccupancy dictionary of rooms - if a device is in a room
                     #not in the dictionary already, add it.
