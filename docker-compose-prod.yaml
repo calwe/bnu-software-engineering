@@ -23,3 +23,11 @@ services:
       context: ./services/appliances
     env_file:
       - ./services/.env.production
+  occupancy:
+    image: occupancy-service:prod
+    ports:
+      - "8006:80"
+    build:
+      context: ./services/occupancy
+    env_file:
+      - ./services/.env.production

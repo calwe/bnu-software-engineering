@@ -6,6 +6,7 @@ import { usersService } from "@/lib/api/users"
 import AppliancesCard from "@/components/appliances/AppliancesCard"
 import FireSafetyCard from "@/components/fire_safety/FireSafetyCard"
 import EnergyCard from "@/components/energy/EnergyCard"
+import OccupancyCard from "@/components/occupancy/OccupancyCard"
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -41,6 +42,7 @@ export default function HomePage() {
         <AppliancesCard />
         <FireSafetyCard />
         <EnergyCard />
+        <OccupancyCard />
       </div>
     </div>
   )
