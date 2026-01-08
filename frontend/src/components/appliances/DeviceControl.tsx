@@ -24,8 +24,8 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
   }
   async function setPeopleDetected() {
     try {
-      const newStatus = !device.peopleDetected
-      await sendCommand(id, { peopleDetected: newStatus })
+      const newStatus = !device.states.peopleDetected
+      await updateState(id,  "peopleDetected", newStatus )
     } catch (error) {
       console.log('Error:', error)
     }
@@ -56,13 +56,13 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
     )
   }
 
-  if (type === "motion_sensor"){
+  if (type === "motion_sensor" || type === "camera"){
     return (
       <div className="flex flex-col gap-2 items-center">
         <div 
           onClick={setPeopleDetected} 
           className={`w-14 h-8 flex items-center rounded-full p-1 cursor-pointer
-            ${device.peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
+            ${device.states.peopleDetected ? "bg-green-500 justify-end" : "bg-gray-300 justify-start"}
           `}
         >
           <div className="w-6 h-6 bg-white rounded-full shadow-md" />

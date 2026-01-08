@@ -28,3 +28,11 @@ class FireAlarm(Device):
 class Sprinkler(Device):
     type: str = "sprinkler"
     states: Dict[str, StateValue] = { "status": "off" }
+
+class Camera(Device):
+    type: str = "camera"
+    states: Dict[str, StateValue] = { "status": "off", "peopleDetected": False }
+
+class MotionSensor(Device):
+    type: str = "motion_sensor"
+    states: Dict[str, StateValue] = { "status": "off", "peopleDetected": False }

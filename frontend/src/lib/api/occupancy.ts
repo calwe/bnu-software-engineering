@@ -16,6 +16,7 @@ export const getOccupancy = async (): Promise<Record<string, boolean>> => {
   return result.data;
 };
 
+
 export const listMonitoringDevices = async (): Promise<Record<string, Device>> => {
   const result = await appliancesApi.get<Record<string, Device>>("/appliances");
   var onlyMonitoring = {}

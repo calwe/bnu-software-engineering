@@ -31,9 +31,9 @@ async def get_monitoring_devices(token: str):
             devices = response.json()
             
             # device_key is now the device ID
+            
             for device_id, device in devices.items():
-                device_type = device.get("type")
-                if device_type == "motion_sensor" or device_type == "camera":
+                if device["type"] == "motion_sensor" or device["type"] == "camera":
                     monitoring_device_states[device_id] = device
                     #Populate the RoomsOccupancy dictionary of rooms - if a device is in a room
                     #not in the dictionary already, add it.
@@ -41,7 +41,7 @@ async def get_monitoring_devices(token: str):
                     RoomsOccupancy[device["room"]] = False
         return monitoring_device_states
     except Exception as e:
-        print(f"Error getting security devices: {e}")
+        print(f"Error getting monitoring devices: {e}")
         return {"alarms": []}
 
 @router.post("/occupancy_check", response_model=OccupancyResponse)
@@ -55,11 +55,11 @@ async def check_occupancy(request: Request, user = Depends(verify_user)):
         monitoring_device_states = await get_monitoring_devices(token)
         for device_id, device in monitoring_device_states.items():
             # if any device detects people in room, set that room to occupied
-            if (device["peopleDetected"]):
+            if (device["states"]["peopleDetected"]):
                 RoomsOccupancy[device["room"]] = True
     
     except Exception as e:
-        print(f"Error in update_readings: {e}")
+        print(f"Error in check_occupancy: {e}")
         
     return OccupancyResponse(
         message="Readings updated",

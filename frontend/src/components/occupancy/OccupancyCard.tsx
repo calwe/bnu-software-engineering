@@ -7,7 +7,6 @@ export default function OccupancyCard() {
   const [occupancy, setOccupancy] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(true)
   const [monitoringDevices, setMonitoringDevices] = useState<Record<string, Device>>({})
-
   useEffect(() => {
       handleUpdate();
     }, [JSON.stringify(monitoringDevices)])
