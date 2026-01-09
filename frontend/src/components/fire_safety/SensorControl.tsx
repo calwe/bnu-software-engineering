@@ -2,6 +2,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useEffect, useState } from "react"
 import { updateSensorReadings } from "@/lib/api/fire_safety"
+import { CheckIcon, FlameIcon } from "lucide-react"
 
 export default function SensorControl() {
   const [temperature, setTemperature] = useState("20")
@@ -25,7 +26,6 @@ export default function SensorControl() {
       setResponse(result)
     } catch (error) {
       console.error('Error:', error)
-    } finally {
     }
   }
 
@@ -65,7 +65,10 @@ export default function SensorControl() {
       </div>
         {response && (
           <p className={response.fire_active ? "text-red-600" : "text-green-600"}>
-            {response.fire_active ? "🔥 Fire Alarm Activated" : "✅ All sensor readings normal"}
+            {response.fire_active
+              ? <span className="flex gap-1"><FlameIcon />Fire Alarm Activate</span>
+              : <span className="flex gap-1"><CheckIcon />All sensor readings normal</span>
+            }
           </p>
         )}
         
