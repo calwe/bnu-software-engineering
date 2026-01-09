@@ -75,6 +75,11 @@ async def get_occupancy_data(token: str):
         logger.error(f"Error getting occupancy data: {e}")
         return {}
 
+async def get_fire_safety_devices(token: str) -> Dict[str, Union[List[str], Dict[str, List[str]]]]:
+    """
+    Gets all fire safety devices.
+    """
+
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(
