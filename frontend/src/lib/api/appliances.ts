@@ -9,7 +9,6 @@ export interface Device {
   states: Record<string, StateValue>;
 }
 
-// Add other types!
 
 export const listDevices = async (): Promise<Record<string, Device>> => {
   const result = await appliancesApi.get<Record<string, Device>>("/appliances");
