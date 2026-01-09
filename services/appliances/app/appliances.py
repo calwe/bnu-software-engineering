@@ -6,7 +6,7 @@ from app.devices import Device, StateValue, Light, Heater, Door, FireAlarm, Spri
 import logging
 
 router = APIRouter()
-logger = logging.getLogger("energy_service")
+logger = logging.getLogger(__name__)
 
 # ===============================
 # Pydantic model

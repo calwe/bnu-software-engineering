@@ -7,7 +7,7 @@ import os
 import logging
 
 router = APIRouter()
-logger = logging.getLogger("energy_service")
+logger = logging.getLogger(__name__)
 
 # ===============================
 # Configuration
