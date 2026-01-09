@@ -34,10 +34,12 @@ services:
       - ./services/.env
     environment:
       - APPLIANCES_SERVICE_URL=http://appliances:8000
+      - OCCUPANCY_SERVICE_URL=http://occupancy:8000
     volumes:
       - ./services/fire_safety/app:/code/app
     depends_on:
       - appliances
+      - occupancy
   energy:
     image: energy-service:dev
     command: "fastapi dev app/main.py --host 0.0.0.0"
@@ -49,8 +51,25 @@ services:
       - ./services/.env
     environment:
       - APPLIANCES_SERVICE_URL=http://appliances:8000
+      - OCCUPANCY_SERVICE_URL=http://occupancy:8000
     volumes:
       - ./services/energy/app:/code/app
+    depends_on:
+      - appliances
+      - occupancy
+  occupancy:
+    image: occupancy-service:dev
+    command: "fastapi dev app/main.py --host 0.0.0.0"
+    ports:
+      - "8006:8000"
+    build:
+      context: ./services/occupancy
+    env_file:
+      - ./services/.env
+    environment:
+      - APPLIANCES_SERVICE_URL=http://appliances:8000
+    volumes:
+      - ./services/occupancy/app:/code/app
     depends_on:
       - appliances
 
