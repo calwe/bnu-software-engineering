@@ -50,7 +50,6 @@ async def get_monitoring_devices(token: str):
             devices = response.json()
             
             for device_id, device in devices.items():
-                # if device["type"] == "motion_sensor" or device["type"] == "camera":
                 if device.get("type") in ("motion_sensor", "camera"):
                     room = device.get("room")
                     if not room:
