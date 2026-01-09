@@ -57,7 +57,7 @@ def get_device(device_id: str, user = Depends(verify_user)):
     """
     device = devices.get(device_id)
 
-    if device_id is None:
+    if device is None:
         raise HTTPException(
             status_code=404, 
             detail=f"Device {device_id} not found"
