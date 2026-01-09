@@ -5,12 +5,6 @@ export interface Room {
   is_empty: boolean;
 }
 
-export interface RoomStatus {
-  room_id: string;
-  room_name: string;
-  is_empty: boolean;
-}
-
 export interface PowerConsumption {
   total_consumption: number;
   active_devices: number;

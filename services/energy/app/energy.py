@@ -25,14 +25,6 @@ OCCUPANCY_SERVICE_URL = "http://occupancy:8000"
 # Models
 # ===============================
 
-class RoomStatus(BaseModel):
-    """
-    Represents the occupancy status of a room.
-    """
-    room_id: str
-    room_name: str
-    is_empty: bool
-
 class EnergyResponse(BaseModel):
     """
     Response returned after automatically controlling room devices.
@@ -52,6 +44,10 @@ class PowerConsumption(BaseModel):
     total_consumption: float
     active_devices: int
     device_breakdown: Dict[str, float]
+
+class Room(BaseModel):
+    name: str
+    is_empty: bool
 
 # ===============================
 # State
@@ -206,7 +202,7 @@ async def get_power_consumption(token: str)  -> Dict[str, object]:
 # API endpoints
 # ===============================
 
-@router.get("/rooms")
+@router.get("/rooms", response_model=Dict[str, Room])
 def get_rooms(user = Depends(verify_user)):
     """
     Get all rooms and their status.
