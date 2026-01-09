@@ -22,6 +22,9 @@ export default function SecurityCard() {
 
   useEffect(() => {
     fetchDevices()
+
+    const interval = setInterval(fetchDevices, 1000)
+    return () => clearInterval(interval)
   }, [])
 
   if (loading) return (
