@@ -264,7 +264,7 @@ async def auto_control(request: Request, user = Depends(verify_user)):
             if room_lights:
                 try:
                     if is_occupied:
-                        print(f"{room_info['name']} is occupied. Turning on {len(room_lights)} lights...")
+                        logger.info(f"{room_info['name']} is occupied. Turning on {len(room_lights)} lights...")
                         await toggle_lights(room_lights, "on", token)
                         changes.append({
                             "room": room_info["name"],
@@ -272,7 +272,7 @@ async def auto_control(request: Request, user = Depends(verify_user)):
                             "lights": len(room_lights)
                         })
                     else:
-                        print(f"{room_info['name']} is empty. Turning off {len(room_lights)} lights...")
+                        logger.info(f"{room_info['name']} is empty. Turning off {len(room_lights)} lights...")
                         await toggle_lights(room_lights, "off", token)
                         changes.append({
                             "room": room_info["name"],
@@ -280,7 +280,7 @@ async def auto_control(request: Request, user = Depends(verify_user)):
                             "lights": len(room_lights)
                         })
                 except Exception as e:
-                    print(f"Error controlling lights in {room_info['name']}: {e}")
+                    logger.error(f"Error controlling lights in {room_info['name']}: {e}")
             
             previous_room_states[room_id] = is_occupied
     
