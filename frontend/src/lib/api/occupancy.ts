@@ -19,7 +19,7 @@ export const getOccupancy = async (): Promise<Record<string, boolean>> => {
 
 export const listMonitoringDevices = async (): Promise<Record<string, Device>> => {
   const result = await appliancesApi.get<Record<string, Device>>("/appliances");
-  var onlyMonitoring = {}
+  const onlyMonitoring: Record<string, Device> = {};
   for (const [key, value] of Object.entries(result.data)){
     if (value.type == "motion_sensor" || value.type == "camera"){
       onlyMonitoring[key] = value

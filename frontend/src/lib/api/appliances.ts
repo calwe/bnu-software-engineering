@@ -9,6 +9,58 @@ export interface Device {
   states: Record<string, StateValue>;
 }
 
+export interface Light extends Device {
+  type: "light";
+  states: {
+    status: string;
+  };
+}
+
+export interface Heater extends Device {
+  type: "heater";
+  states: {
+    status: string;
+    temperature: number;
+  };
+}
+
+export interface Door extends Device {
+  type: "door";
+  states: {
+    locked: boolean;
+  };
+}
+
+export interface FireAlarm extends Device {
+  type: "fire_alarm";
+  states: {
+    status: string;
+  };
+}
+
+export interface Sprinkler extends Device {
+  type: "sprinkler";
+  states: {
+    status: string;
+  };
+}
+
+export interface Camera extends Device {
+  type: "camera";
+  states: {
+    status: string;
+    peopleDetected: boolean;
+  };
+}
+
+export interface MotionSensor extends Device {
+  type: "motion_sensor";
+  states: {
+    status: string;
+    peopleDetected: boolean;
+  };
+}
+
 
 export const listDevices = async (): Promise<Record<string, Device>> => {
   const result = await appliancesApi.get<Record<string, Device>>("/appliances");
