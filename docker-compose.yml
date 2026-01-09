@@ -57,6 +57,23 @@ services:
     depends_on:
       - appliances
       - occupancy
+  security:
+    image: security-service:dev
+    command: "fastapi dev app/main.py --host 0.0.0.0"
+    ports:
+      - "8005:8000"
+    build:
+      context: ./services/security
+    env_file:
+      - ./services/.env
+    environment:
+      - APPLIANCES_SERVICE_URL=http://appliances:8000
+      - OCCUPANCY_SERVICE_URL=http://occupancy:8000
+    volumes:
+      - ./services/security/app:/code/app
+    depends_on:
+      - appliances
+      - occupancy
   occupancy:
     image: occupancy-service:dev
     command: "fastapi dev app/main.py --host 0.0.0.0"
