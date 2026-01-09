@@ -87,7 +87,7 @@ async def check_occupancy(request: Request, user = Depends(verify_user)):
         for device in monitoring_device_states.values():
             room = device.get("room")
             if room and device.get("states", {}).get("peopleDetected", False):
-                RoomOccupancy[room] = True
+                RoomsOccupancy[room] = True
     
     except Exception as e:
         logger.error(f"Error in check_occupancy: {e}")

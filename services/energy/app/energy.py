@@ -90,31 +90,43 @@ async def get_occupancy_data(token: str):
         logger.error(f"Error getting occupancy data: {e}")
         return {}
 
+async def get_light_devices(token: str) -> Dict[str, List[str]]:
+    """
+    Gets all light devices grouped by room.
+    """
+    lights_by_room: Dict[str, List[str]] = {}
+
     try:
-        async with httpx.AsyncClient(follow_redirects=True) as client:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
             response = await client.get(
                 f"{APPLIANCES_SERVICE_URL}/appliances/",
                 headers={"Authorization": f"Bearer {token}"},
-                timeout=10.0
             )
-
             response.raise_for_status()
+
             devices = response.json()
-            
+
             for device_id, device in devices.items():
-                device_type = device.get("type")
-                if device_type == "light":
-                    room = device.get("room", "unknown")
-                    if room not in lights:
-                        lights[room] = []
-                    lights[room].append(device_id)
-            
-            logger.info(f"Light devices found: {lights}")
-            return lights
-    except Exception as e:
-        logger.error(f"Error getting devices: {e}")
-        
-    return lights_by_room
+                if device.get("type") == "light":
+                    room = device.get("room")
+                    if not room:
+                        logger.warning(f"Light {device_id} has no room assigned")
+                        continue
+
+                    lights_by_room.setdefault(room, []).append(device_id)
+
+            logger.info(f"Light devices found: {lights_by_room}")
+            return lights_by_room
+
+    except httpx.RequestError as e:
+        logger.error(f"Appliances service unreachable: {e}")
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Failed to fetch devices: {e.response.status_code}")
+    except Exception:
+        logger.exception("Unexpected error in get_light_devices")
+
+    return {}
+
 
 async def toggle_lights(device_ids: list, status: str, token: str):
     """
