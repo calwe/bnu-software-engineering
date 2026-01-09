@@ -12,6 +12,7 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
   const { type } = device
 
   const [status, setStatus] = useState(device.states.status ?? "")
+  const [locked, setLocked] = useState(device.states.locked ?? false)
   const [peopleDetected, setPeopleDetected] = useState(device.states.peopleDetected ?? false)
 
   async function handleClick() {
@@ -35,6 +36,9 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
 
   useEffect(() => setStatus(device.states["status"] ?? ""),
             [device.states["status"]])
+  
+  useEffect(() => setLocked(device.states["locked"] ?? false),
+            [device.states["locked"]])
 
    useEffect(() => setPeopleDetected(device.states["peopleDetected"] ?? false),
             [device.states["peopleDetected"]])
@@ -43,6 +47,12 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
     <span
       className={`inline-block w-8 h-8 rounded-full ${status === "on" ? "bg-red-600 animate-pulse" : "bg-gray-300"}`}
       title={status === "on" ? "Active" : "Inactive"}
+    />
+  )
+  const LockStatus =() => (
+    <span
+      className={`inline-block w-8 h-8 rounded-full ${locked === true ? "bg-green-600" : "bg-red-600"}`}
+      title={locked === true ? "Locked" : "Unlocked"}
     />
   )
   
@@ -61,6 +71,13 @@ export default function DeviceControl({ id, device }: DeviceControlProps) {
     )
   }
 
+if (type === 'door') {
+  return (
+      <div className="flex flex-col gap-2 items-center">
+        <LockStatus />
+      </div>
+    )
+}
   if (type === "motion_sensor" || type === "camera"){
     return (
       <div className="flex flex-col gap-2 items-center">

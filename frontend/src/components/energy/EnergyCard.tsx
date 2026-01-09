@@ -16,14 +16,15 @@ export default function EnergyCard() {
           <Card>
             <CardHeader>
               <CardTitle>Automatic Device Control</CardTitle>
-              <CardDescription>When rooms are empty, automatically turn off the lights to save energy</CardDescription>
+              <CardDescription>
+                Room lights automatically turn off when it's empty
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <AutomaticPowerControl />
-              
             </CardContent>
           </Card>
-            <Card>
+          <Card>
             <CardHeader>
               <CardTitle>Power Monitoring</CardTitle>
               <CardDescription>Monitor power consumption</CardDescription>

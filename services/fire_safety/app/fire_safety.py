@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, Union
 from app.auth import verify_user
 import httpx
 import os
@@ -29,6 +29,25 @@ current_readings = {
 previous_threshold_state = False
 
 APPLIANCES_SERVICE_URL = os.getenv("APPLIANCES_SERVICE_URL", "http://appliances:8000")
+OCCUPANCY_SERVICE_URL = "http://occupancy:8000"
+
+async def get_occupancy_data(token: str):
+    """Gets occupancy data from occupancy service"""
+    try:
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{OCCUPANCY_SERVICE_URL}/occupancy/",
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10.0
+            )
+            if response.status_code != 200:
+                print(f"Failed to fetch occupancy: {response.status_code}")
+                return {}
+            
+            return response.json()
+    except Exception as e:
+        print(f"Error getting occupancy data: {e}")
+        return {}
 
 async def get_fire_safety_devices(token: str):
     """Gets all fire alarm and sprinkler devices from appliances service"""
@@ -41,36 +60,44 @@ async def get_fire_safety_devices(token: str):
             )
             if response.status_code != 200:
                 print(f"Failed to fetch devices: {response.status_code}")
-                return {"alarms": [], "sprinklers": []}
+                return {"alarms": [], "sprinklers": {}, "doors": []}
             
             devices = response.json()
             fire_devices = {
                 "alarms": [],
-                "sprinklers": []
+                "sprinklers": {},
+                "doors": []
             }
             
-            # device_key is now the device ID
             for device_id, device in devices.items():
                 device_type = device.get("type")
+                device_name = device.get("name", "")
+                
                 if device_type == "fire_alarm":
                     fire_devices["alarms"].append(device_id)
-                elif device_type == "sprinkler":
-                    fire_devices["sprinklers"].append(device_id)
+                elif device_type == "sprinkler" or "sprinkler" in device_name.lower():
+                    room = device.get("room", "unknown")
+                    if room not in fire_devices["sprinklers"]:
+                        fire_devices["sprinklers"][room] = []
+                    fire_devices["sprinklers"][room].append(device_id)
+                    print(f"Added sprinkler {device_id} to room {room}")
+                elif device_type == "door":
+                    fire_devices["doors"].append(device_id)
             
             print(f"Fire safety devices found: {fire_devices}")
             return fire_devices
     except Exception as e:
         print(f"Error getting fire safety devices: {e}")
-        return {"alarms": [], "sprinklers": []}
+        return {"alarms": [], "sprinklers": {}, "doors": []}
 
-async def toggle_devices(device_ids: list, status: str, token: str):
-    """Toggle devices on/off"""
+async def toggle_devices(device_ids: list, state_name: str, value: Union[str, bool], token: str):
+    """Toggles device states"""
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
             for device_id in device_ids:
                 response = await client.post(
                     f"{APPLIANCES_SERVICE_URL}/appliances/{device_id}/updateState",
-                    json={"state": "status", "value": status},
+                    json={"state": state_name, "value": value},
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=10.0
                 )
@@ -95,49 +122,61 @@ async def update_readings(readings: SensorReadings, request: Request, user = Dep
     # Check current threshold state
     threshold_state = readings.temperature > TEMPERATURE_THRESHOLD or readings.smoke_level > SMOKE_THRESHOLD
 
-    # Only contact send request to appliance service if threshold state has changed
-    if threshold_state != previous_threshold_state:
+    # Extract token from request headers
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "") if auth_header else ""
+    
+    try:
+        # Get fire safety devices
+        fire_devices = await get_fire_safety_devices(token)
         
-        # Extract token from request headers
-        auth_header = request.headers.get("Authorization", "")
-        token = auth_header.replace("Bearer ", "") if auth_header else ""
-        
-        try:
-            # Get fire safety devices
-            fire_devices = await get_fire_safety_devices(token)
-            
-            if threshold_state:
-                print("Thresholds exceeded! Activating safety systems...")
+        if threshold_state:
+            if not previous_threshold_state:
+                print("Thresholds exceeded - Activating alarms and unlocking doors...")
                 
-                # Activate alarms
                 if fire_devices["alarms"]:
                     print(f"Activating {len(fire_devices['alarms'])} fire alarms")
-                    await toggle_devices(fire_devices["alarms"], "on", token)
+                    await toggle_devices(fire_devices["alarms"], "status", "on", token)
                 
-                if fire_devices["sprinklers"]:
-                    print(f"Activating {len(fire_devices['sprinklers'])} sprinklers")
-                    await toggle_devices(fire_devices["sprinklers"], "on", token)
+                if fire_devices["doors"]:
+                    print(f"Unlocking {len(fire_devices['doors'])} doors")
+                    await toggle_devices(fire_devices["doors"], "locked", False, token)
+            
+            # Check occupancy and control sprinklers per room
+            if fire_devices["sprinklers"]:
+                occupancy_data = await get_occupancy_data(token)
+                
+                for room_id, sprinkler_ids in fire_devices["sprinklers"].items():
+                    is_occupied = occupancy_data.get(room_id, False)
                     
-                if not fire_devices["alarms"] and not fire_devices["sprinklers"]:
-                    print("No fire devices found")
-            else:
-                print("Thresholds normal. Deactivating safety systems...")
+                    if not is_occupied:
+                        print(f"{room_id} is empty. Activating sprinklers...")
+                        await toggle_devices(sprinkler_ids, "status", "on", token)
+                    else:
+                        print(f"{room_id} is occupied. Keeping sprinklers off...")
+                        
+        else:
+            if previous_threshold_state:
+                print("Thresholds return to normal levels - Deactivating safety systems...")
                 
-                # Deactivate alarms
                 if fire_devices["alarms"]:
                     print(f"Deactivating {len(fire_devices['alarms'])} fire alarms")
-                    await toggle_devices(fire_devices["alarms"], "off", token)
+                    await toggle_devices(fire_devices["alarms"], "status", "off", token)
                 
-                # Deactivate sprinklers
                 if fire_devices["sprinklers"]:
-                    print(f"Deactivating {len(fire_devices['sprinklers'])} sprinklers")
-                    await toggle_devices(fire_devices["sprinklers"], "off", token)
-        
-        except Exception as e:
-            print(f"Error in update_readings: {e}")
-        
-        # Update previous state
-        previous_threshold_state = threshold_state
+                    for room_id, sprinkler_ids in fire_devices["sprinklers"].items():
+                        print(f"Deactivating sprinklers in {room_id}")
+                        await toggle_devices(sprinkler_ids, "status", "off", token)
+
+                if fire_devices["doors"]:
+                    print(f"Locking {len(fire_devices['doors'])} doors")
+                    await toggle_devices(fire_devices["doors"], "locked", True, token)
+                    
+    except Exception as e:
+        print(f"Error in update_readings: {e}")
+    
+    # Update previous state
+    previous_threshold_state = threshold_state
     
     return SensorResponse(
         message="Readings updated",

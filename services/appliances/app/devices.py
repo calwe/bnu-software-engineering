@@ -18,7 +18,7 @@ class Heater(Device):
     states: Dict[str, StateValue] = { "status": "off", "temperature": 20 }
 
 class Door(Device):
-    type: str = "heater"
+    type: str = "door"
     states: Dict[str, StateValue] = { "locked": True }
 
 class FireAlarm(Device):
