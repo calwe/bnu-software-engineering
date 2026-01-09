@@ -44,9 +44,9 @@ export default function HomePage() {
         <div className="flex flex-col gap-6">
           <FireSafetyCard />
           <SecurityCard />
+          <OccupancyCard />
         </div>
         <EnergyCard />
-        <OccupancyCard />
       </div>
     </div>
   )
