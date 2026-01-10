@@ -43,7 +43,7 @@ async def get_doors(request: Request, user = Depends(verify_user)):
     """
     Gets all door devices from appliances service.
     """
-    # token = request.headers.get("Authorization")
+
     auth_header = request.headers.get("Authorization", "")
     token = auth_header.replace("Bearer ", "") if auth_header else ""
 
@@ -65,7 +65,7 @@ async def get_doors(request: Request, user = Depends(verify_user)):
                     doors[device_id] = device
         return doors
     except Exception as e:
-        logger.error(f"Error getting monitoring devices: {e}")
+        logger.error(f"Error getting doors: {e}")
         return {}
 
 @router.post("/{device_id}/unlock")
