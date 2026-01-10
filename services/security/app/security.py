@@ -4,39 +4,20 @@ from typing import Optional, Dict
 from app.auth import verify_user
 import httpx
 import os
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+# ===============================
+# Configuration
+# ===============================
 
 APPLIANCES_SERVICE_URL = os.getenv("APPLIANCES_SERVICE_URL", "http://appliances:8000")
 
-@router.get("/doors")
-async def get_doors(request: Request, user = Depends(verify_user)):
-    """Gets all door devices from appliances service"""
-    token = request.headers.get("Authorization")
-
-    try:
-        doors = {}
-        async with httpx.AsyncClient(follow_redirects=True) as client:
-            # get all appliances
-            response = await client.get(
-                f"{APPLIANCES_SERVICE_URL}/appliances/",
-                headers={"Authorization": token},
-                timeout=10.0
-            )
-            if response.status_code != 200:
-                print(f"Failed to fetch devices: {response.status_code}")
-                return {} 
-            
-            devices = response.json()
-            
-            # filter for just doors
-            for device_id, device in devices.items():
-                if device["type"] == "door":
-                    doors[device_id] = device
-        return doors
-    except Exception as e:
-        print(f"Error getting monitoring devices: {e}")
-        return {}
+# ===============================
+# Helper functions
+# ===============================
 
 async def change_door_lock(device_id: str, locked: bool, token: str):
     try:
@@ -49,19 +30,57 @@ async def change_door_lock(device_id: str, locked: bool, token: str):
                 timeout=10.0
             )
             if response.status_code != 200:
-                print(f"Failed to change door state: {response.status_code}")
+                logger.error(f"Failed to change door state: {response.status_code}")
     except Exception as e:
-        print(f"Error updating door state: {e}")
+        logger.error(f"Error updating door state: {e}")
+
+# ===============================
+# API endpoints
+# ===============================
+
+@router.get("/doors")
+async def get_doors(request: Request, user = Depends(verify_user)):
+    """
+    Gets all door devices from appliances service.
+    """
+    # token = request.headers.get("Authorization")
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.replace("Bearer ", "") if auth_header else ""
+
+    try:
+        doors = {}
+        async with httpx.AsyncClient(follow_redirects=True) as client:
+            response = await client.get(
+                f"{APPLIANCES_SERVICE_URL}/appliances/",
+                headers={"Authorization": f"Bearer {token}"},
+                timeout=10.0
+            )
+
+            response.raise_for_status()
+            devices = response.json()
+            
+            # filter for just doors
+            for device_id, device in devices.items():
+                if device["type"] == "door":
+                    doors[device_id] = device
+        return doors
+    except Exception as e:
+        logger.error(f"Error getting monitoring devices: {e}")
+        return {}
 
 @router.post("/{device_id}/unlock")
 async def unlock_door(device_id: str, request: Request, user = Depends(verify_user)):
-    """Unlock a given door"""
+    """
+    Unlock a given door.
+    """
     token = request.headers.get("Authorization")
     await change_door_lock(device_id, False, token)
 
 @router.post("/{device_id}/lock")
 async def lock_door(device_id: str, request: Request, user = Depends(verify_user)):
-    """Lock a given door"""
+    """
+    Lock a given door.
+    """
     token = request.headers.get("Authorization")
     await change_door_lock(device_id, True, token)
 
