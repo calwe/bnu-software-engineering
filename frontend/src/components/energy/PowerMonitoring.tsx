@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { getPowerConsumption } from "@/lib/api/energy"
 import type { PowerConsumption } from "@/lib/api/energy"

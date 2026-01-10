@@ -1,10 +1,25 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from typing import Optional, Dict
+from typing import Optional, Dict, Any
 from app.auth import verify_user
 from app.devices import Device, StateValue, Light, Heater, Door, FireAlarm, Sprinkler, Camera, MotionSensor
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+# ===============================
+# Pydantic model
+# ===============================
+
+class UpdateStateRequest(BaseModel):
+    state: str
+    value: StateValue
+
+# ===============================
+# Device store
+# This acts as a mock database for demonstration purposes.
+# ===============================
 
 devices: Dict[str, Device] = {
     "light1": Light(name = "Living Room Main Light", room = "living_room"),
@@ -25,33 +40,49 @@ devices: Dict[str, Device] = {
     "motionSensor3": MotionSensor(name = "Bedroom Motion Sensor", room = "bedroom")
 }
 
-class UpdateStateRequest(BaseModel):
-    state: str
-    value: StateValue
+# ===============================
+# API endpoints
+# ===============================
 
 @router.get("/", response_model=Dict[str, Device])
 def list_devices(user = Depends(verify_user)):
+    """
+    Returns all registered devices with their current states.
+    """
     return devices
 
 @router.get("/{device_id}", response_model=Device)
 def get_device(device_id: str, user = Depends(verify_user)):
-    if device_id not in devices:
-        raise HTTPException(status_code=404, detail="Device not found")
-    return devices[device_id]
+    """
+    Retrieves the state of a single device.
+    """
+    device = devices.get(device_id)
+
+    if device is None:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"Device {device_id} not found"
+            )
+
+    return device 
 
 @router.post("/{device_id}/updateState", response_model=StateValue)
 def update_state(device_id: str, request: UpdateStateRequest, user = Depends(verify_user)):
-    if device_id not in devices:
-        raise HTTPException(status_code=404, detail="Device not found")
+    """
+    Updates a specific state of a device and returns the change.
+    """
+    device = devices.get(device_id)
 
-    device = devices[device_id]
+    if device is None:
+        raise HTTPException(status_code=404, detail=f"Device {device_id} not found")
 
     if request.state not in device.states:
-        raise HTTPException(status_code=404, detail="State not found")
+        raise HTTPException(status_code=404, detail=f"State {request.state} not found")
     
     device_name = devices[device_id].name
 
-    print(f"Setting '{request.state}'='{request.value}' for {device_id} ({device_name})")
+    logger.info(f"Setting '{request.state}'='{request.value}' for {device_id} ({device_name})")
+
     old_state = device.states[request.state]
     device.states[request.state] = request.value
     

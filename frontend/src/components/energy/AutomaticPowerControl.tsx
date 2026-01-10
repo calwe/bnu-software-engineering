@@ -1,5 +1,3 @@
-"use client"
-
 import { Label } from "@/components/ui/label"
 import { useState, useEffect } from "react"
 import { getOccupancy } from "@/lib/api/occupancy"

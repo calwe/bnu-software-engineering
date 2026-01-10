@@ -4,20 +4,31 @@ from typing import Dict, List
 from app.auth import verify_user
 import httpx
 import os
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
+
+# ===============================
+# Configuration
+# ===============================
 
 LIGHT_POWER_RATING = 10.0
 FIRE_ALARM_POWER_RATING = 5.0
 SPRINKLER_POWER_RATING = 0.0
 HEATER_POWER_RATING = 3.0
 
-class RoomStatus(BaseModel):
-    room_id: str
-    room_name: str
-    is_empty: bool
+APPLIANCES_SERVICE_URL = os.getenv("APPLIANCES_SERVICE_URL", "http://appliances:8000")
+OCCUPANCY_SERVICE_URL = "http://occupancy:8000"
+
+# ===============================
+# Models
+# ===============================
 
 class EnergyResponse(BaseModel):
+    """
+    Response returned after automatically controlling room devices.
+    """
     message: str
     room_id: str
     room_name: str
@@ -27,29 +38,39 @@ class EnergyResponse(BaseModel):
     light_names: List[str]
 
 class PowerConsumption(BaseModel):
+    """
+    Current power consumption summary.
+    """
     total_consumption: float
     active_devices: int
     device_breakdown: Dict[str, float]
 
+class Room(BaseModel):
+    name: str
+    is_empty: bool
+
+# ===============================
+# State
+# ===============================
+
 # Track room statuses
-rooms = {
+rooms: Dict[str, Dict[str, bool]] = {
     "living_room": {"name": "Living Room", "is_empty": False},
     "bedroom": {"name": "Bedroom", "is_empty": False},
     "kitchen": {"name": "Kitchen", "is_empty": False},
 }
 
 # Track previous room states
-previous_room_states = {room_id: False for room_id in rooms.keys()}
-
-APPLIANCES_SERVICE_URL = os.getenv("APPLIANCES_SERVICE_URL", "http://appliances:8000")
-OCCUPANCY_SERVICE_URL = "http://occupancy:8000"
+previous_room_states: Dict[str, bool] = {room_id: False for room_id in rooms.keys()}
 
 async def get_occupancy_data(token: str):
-    """Gets occupancy data from occupancy service"""
+    """
+    Gets occupancy data from occupancy service.
+    """
     try:
-        print(f"Occupancy Service URL: {OCCUPANCY_SERVICE_URL}")
+        logger.info(f"Occupancy Service URL: {OCCUPANCY_SERVICE_URL}")
 
-        print(f"Appliances Service URL: {APPLIANCES_SERVICE_URL}")
+        logger.info(f"Appliances Service URL: {APPLIANCES_SERVICE_URL}")
         async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(
                 f"{OCCUPANCY_SERVICE_URL}/occupancy/",
@@ -57,46 +78,56 @@ async def get_occupancy_data(token: str):
                 timeout=10.0
             )
             if response.status_code != 200:
-                print(f"Failed to fetch occupancy: {response.status_code}")
+                logger.error(f"Failed to fetch occupancy: {response.status_code}")
                 return {}
             
             return response.json()
     except Exception as e:
-        print(f"Error getting occupancy data: {e}")
+        logger.error(f"Error getting occupancy data: {e}")
         return {}
 
-async def get_light_devices(token: str):
-    """Gets all light devices from appliances service"""
+async def get_light_devices(token: str) -> Dict[str, List[str]]:
+    """
+    Gets all light devices grouped by room.
+    """
+    lights_by_room: Dict[str, List[str]] = {}
+
     try:
-        async with httpx.AsyncClient(follow_redirects=True) as client:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
             response = await client.get(
                 f"{APPLIANCES_SERVICE_URL}/appliances/",
                 headers={"Authorization": f"Bearer {token}"},
-                timeout=10.0
             )
-            if response.status_code != 200:
-                print(f"Failed to fetch devices: {response.status_code}")
-                return {}
-            
+            response.raise_for_status()
+
             devices = response.json()
-            lights = {}
-            
+
             for device_id, device in devices.items():
-                device_type = device.get("type")
-                if device_type == "light":
-                    room = device.get("room", "unknown")
-                    if room not in lights:
-                        lights[room] = []
-                    lights[room].append(device_id)
-            
-            print(f"Light devices found: {lights}")
-            return lights
-    except Exception as e:
-        print(f"Error getting devices: {e}")
-        return {}
+                if device.get("type") == "light":
+                    room = device.get("room")
+                    if not room:
+                        logger.warning(f"Light {device_id} has no room assigned")
+                        continue
+
+                    lights_by_room.setdefault(room, []).append(device_id)
+
+            logger.info(f"Light devices found: {lights_by_room}")
+            return lights_by_room
+
+    except httpx.RequestError as e:
+        logger.error(f"Appliances service unreachable: {e}")
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Failed to fetch devices: {e.response.status_code}")
+    except Exception:
+        logger.exception("Unexpected error in get_light_devices")
+
+    return {}
+
 
 async def toggle_lights(device_ids: list, status: str, token: str):
-    """Toggle lights on/off"""
+    """
+    Toggle lights on/off.
+    """
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
             for device_id in device_ids:
@@ -106,11 +137,16 @@ async def toggle_lights(device_ids: list, status: str, token: str):
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=10.0
                 )
-    except Exception as e:
-        print(f"Error toggling lights: {e}")
+                response.raise_for_status()
+    except httpx.HTTPError as e:
+        logger.warning(
+            f"Failed to toggle light '{light['id']}': {e}"
+        )
 
-async def get_power_consumption(token: str):
-    """Gets power consumption data from all appliances"""
+async def get_power_consumption(token: str)  -> Dict[str, object]:
+    """
+    Gets power consumption data from all appliances.
+    """
     try:
         async with httpx.AsyncClient(follow_redirects=True) as client:
             response = await client.get(
@@ -118,14 +154,13 @@ async def get_power_consumption(token: str):
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=10.0
             )
-            if response.status_code != 200:
-                print(f"Failed to fetch devices: {response.status_code}")
-                return {"total": 0.0, "active": 0, "breakdown": {}}
-            
+
+            response.raise_for_status()
             devices = response.json()
+
             total_consumption = 0.0
             active_count = 0
-            breakdown = {}
+            breakdown: Dict[str, float] = {}
             
             power_ratings = {
                 "light": LIGHT_POWER_RATING,      
@@ -140,7 +175,6 @@ async def get_power_consumption(token: str):
                     continue
                 status = device.get("states").get("status", "off")
                 device_name = device.get("name", device_id)
-    
                 power_rating = power_ratings.get(device_type, 0.0)
                 
                 if status == "on":
@@ -155,21 +189,40 @@ async def get_power_consumption(token: str):
                 "active": active_count,
                 "breakdown": breakdown
             }
+    except httpx.RequestError as e:
+        logger.error(f"Appliances service unreachable: {e}")
+    except httpx.HTTPStatusError as e:
+        logger.error(f"Failed to fetch devices: {e.response.status_code}")
     except Exception as e:
-        print(f"Error getting power consumption: {e}")
-        return {"total": 0.0, "active": 0, "breakdown": {}}
+        logger.error(f"Error getting power consumption: {e}")
+        
+    return {"total": 0.0, "active": 0, "breakdown": {}}
 
-@router.get("/rooms")
+# ===============================
+# API endpoints
+# ===============================
+
+@router.get("/rooms", response_model=Dict[str, Room])
 def get_rooms(user = Depends(verify_user)):
-    """Get all rooms and their status"""
+    """
+    Get all rooms and their status.
+    """
     return rooms
 
-@router.get("/consumption")
+@router.get("/consumption", response_model=PowerConsumption)
 async def get_consumption(request: Request, user = Depends(verify_user)):
-    """Get current power consumption"""
+    """
+    Get current power consumption.
+    """
     # Extract token from request headers
     auth_header = request.headers.get("Authorization", "")
-    token = auth_header.replace("Bearer ", "") if auth_header else ""
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(
+            status_code=401,
+            detail="Missing or invalid Authorization header"
+        )
+
+    token = auth_header.removeprefix("Bearer ").strip()
     
     consumption_data = await get_power_consumption(token)
     
@@ -181,7 +234,9 @@ async def get_consumption(request: Request, user = Depends(verify_user)):
 
 @router.post("/auto-control")
 async def auto_control(request: Request, user = Depends(verify_user)):
-    """Automatically control lights based on occupancy"""
+    """
+    Automatically control lights based on occupancy.
+    """
     global previous_room_states
     
     auth_header = request.headers.get("Authorization", "")
@@ -205,7 +260,7 @@ async def auto_control(request: Request, user = Depends(verify_user)):
             if room_lights:
                 try:
                     if is_occupied:
-                        print(f"{room_info['name']} is occupied. Turning on {len(room_lights)} lights...")
+                        logger.info(f"{room_info['name']} is occupied. Turning on {len(room_lights)} lights...")
                         await toggle_lights(room_lights, "on", token)
                         changes.append({
                             "room": room_info["name"],
@@ -213,7 +268,7 @@ async def auto_control(request: Request, user = Depends(verify_user)):
                             "lights": len(room_lights)
                         })
                     else:
-                        print(f"{room_info['name']} is empty. Turning off {len(room_lights)} lights...")
+                        logger.info(f"{room_info['name']} is empty. Turning off {len(room_lights)} lights...")
                         await toggle_lights(room_lights, "off", token)
                         changes.append({
                             "room": room_info["name"],
@@ -221,7 +276,7 @@ async def auto_control(request: Request, user = Depends(verify_user)):
                             "lights": len(room_lights)
                         })
                 except Exception as e:
-                    print(f"Error controlling lights in {room_info['name']}: {e}")
+                    logger.error(f"Error controlling lights in {room_info['name']}: {e}")
             
             previous_room_states[room_id] = is_occupied
     

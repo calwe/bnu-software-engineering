@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import AutomaticPowerControl from "./AutomaticPowerControl"
 import PowerMonitoring from "./PowerMonitoring"

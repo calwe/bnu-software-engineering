@@ -2,10 +2,29 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.energy import router as energy_router
 import os
+import logging
+
+# ===============================
+# Logging configuration
+# ===============================
+
+logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+
+# ===============================
+# App initialisation
+# ===============================
 
 app = FastAPI()
 
-# Configure CORS
+# ===============================
+# CORS configuration
+# ===============================
+
 cors_origins = os.getenv("CORS_ORIGINS")
 app.add_middleware(
     CORSMiddleware,
@@ -14,5 +33,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+logger.info(f"CORS configured for origins: {cors_origins}")
+
+# ===============================
+# Routers
+# ===============================
 
 app.include_router(energy_router, prefix="/energy")
