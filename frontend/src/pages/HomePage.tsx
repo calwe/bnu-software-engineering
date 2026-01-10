@@ -5,6 +5,7 @@ import AppliancesCard from "@/components/appliances/AppliancesCard"
 import FireSafetyCard from "@/components/fire_safety/FireSafetyCard"
 import EnergyCard from "@/components/energy/EnergyCard"
 import OccupancyCard from "@/components/occupancy/OccupancyCard"
+import SecurityCard from "@/components/security/SecurityCard"
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -38,9 +39,12 @@ export default function HomePage() {
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <AppliancesCard />
-        <FireSafetyCard />
+        <div className="flex flex-col gap-6">
+          <FireSafetyCard />
+          <SecurityCard />
+          <OccupancyCard />
+        </div>
         <EnergyCard />
-        <OccupancyCard />
       </div>
     </div>
   )

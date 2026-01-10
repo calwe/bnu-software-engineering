@@ -30,6 +30,7 @@ devices: Dict[str, Device] = {
     "light6": Light(name = "Kitchen Counter Light", room = "kitchen"),
     "heater1": Heater(name = "Living Room Heater", room = "living_room"),
     "door1": Door(name = "Front Door"),
+    "door2": Door(name = "Back Door"),
     "fire_alarm1": FireAlarm(name = "Living Room Fire Alarm", room = "living_room"),
     "sprinkler1": Sprinkler(name = "Living Room Sprinkler", room = "living_room"),
     "camera1" : Camera(name = "Living Room Camera", room = "living_room"),
